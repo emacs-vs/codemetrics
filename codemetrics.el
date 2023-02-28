@@ -39,5 +39,11 @@
   :group 'comm
   :link '(url-link :tag "Repository" "https://github.com/jcs-elpa/codemetrics"))
 
+(defcustom codemetrics-complexity 'cognitive
+  "Type of the complexity computation."
+  :type '(choice (const :tag "Cognitive Complexity" cognitive)
+                 (const :tag "Cyclomatic Complexity" cyclomatic))
+  :group 'codemetrics)
+
 (provide 'codemetrics)
 ;;; codemetrics.el ends here
