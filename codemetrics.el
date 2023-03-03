@@ -31,7 +31,12 @@
 
 ;;; Code:
 
+(require 'cl-lib)
+(require 'pcase)
+
 (require 'tree-sitter)
+
+(require 'codemetrics-rules)
 
 (defgroup codemetrics nil
   "Plugin shows complexity information."
@@ -44,6 +49,109 @@
   :type '(choice (const :tag "Cognitive Complexity" cognitive)
                  (const :tag "Cyclomatic Complexity" cyclomatic))
   :group 'codemetrics)
+
+(defcustom codemetrics-rules
+  `((csharp-mode . ,(codemetrics-rules-csharp))
+    (java-mode   . ,(codemetrics-rules-java)))
+  "An alist of (major-mode . (node-type . weight)).
+
+WEIGHT is used to determine the final score."
+  :type '(alist :key-type symbol
+                :value-type (alist :key-type symbol :value-type function))
+  :group 'codemetrics)
+
+;;
+;; (@* "Util" )
+;;
+
+(defmacro codemetrics--ensure-ts (&rest body)
+  "Run BODY only if `tree-sitter-mode` is enabled."
+  (declare (indent 0))
+  `(if (bound-and-true-p tree-sitter-mode)
+       (progn ,@body)
+     (user-error "Tree-Sitter mode is not enabled for this buffer!")))
+
+;;
+;; (@* "Core" )
+;;
+
+(defun codemetrics--rules (&optional mode)
+  "Return rules from major (MODE)."
+  (cdr (assoc (or mode major-mode) codemetrics-rules)))
+
+(defun codemetrics--tsc-traverse-mapc (func tree-or-node &optional depth)
+  "Like function `tsc-traverse-mapc' but pass with node.
+
+For arguments FUNC and TREE-OR-NODE, see function `tsc-traverse-mapc' for
+details.  Optional argument DEPTH is used for recursive depth calculation."
+  (let ((depth (or depth 0))
+        (node (if (tsc-node-p tree-or-node) tree-or-node
+                (tsc-root-node tree-or-node))))
+    (unless (tsc-node-p tree-or-node)
+      (funcall func node depth))
+    (tsc-mapc-children
+     (lambda (node)
+       (cl-incf depth)
+       (funcall func node depth)
+       (codemetrics--tsc-traverse-mapc func node depth)
+       (cl-decf depth))
+     node)))
+
+;;;###autoload
+(defun codemetrics-analyze (content &optional mode)
+  "Analyze CONTENT in major (MODE), the code."
+  (codemetrics--ensure-ts
+    (let* ((mode (or mode major-mode))
+           (rules (codemetrics--rules mode))
+           (nested-level 0)
+           (nest 0)
+           (score 0))
+      (with-temp-buffer
+        (insert content)
+        (delay-mode-hooks (funcall mode))
+        (tree-sitter-mode 1)
+        (codemetrics--tsc-traverse-mapc
+         (lambda (node depth)
+           (when (< depth nested-level)  ; decrement out
+             (setq nested-level depth))
+           (when-let* ((type (tsc-node-type node))
+                       (rule (assoc type rules))
+                       (weight (cdr rule))
+                       (nested (if (< nested-level depth) 1 0)))
+             (setq nested-level depth)  ; record, increment in
+             (when (functionp weight)
+               (setq weight (funcall weight node)))
+             (cl-incf score (* (+ nested (car weight)) (cdr weight)))))
+         tree-sitter-tree))
+      score)))
+
+;;;###autoload
+(defun codemetrics-region (beg end)
+  "Analyze the region."
+  (let ((beg (or beg (point-min)))
+        (end (or end (point-max))))
+    (codemetrics-analyze (buffer-substring beg end))))
+
+;;;###autoload
+(defun codemetrics-buffer ()
+  "Analyze current buffer."
+  (codemetrics-analyze (buffer-string)))
+
+;;
+;; (@* "Languages" )
+;;
+
+(defun codemetrics-score-java-outer-loop (node)
+  "Define score for Java outer loop (jump), `break' and `continue' statements.
+
+For arguments NODE, see function `TODO' for more information."
+  (if (<= (tsc-count-children node) 2) (0 . 0) (1 . 1)))
+
+(defun codemetrics-score-java-logical-operators (node)
+  "Define score for Java logical operators.
+
+For arguments NODE, see function `TODO' for more information."
+  (0 . 0))
 
 (provide 'codemetrics)
 ;;; codemetrics.el ends here
