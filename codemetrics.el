@@ -119,8 +119,9 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
                        (weight (cdr rule))
                        (nested (if (< nested-level depth) 1 0)))
              (setq nested-level depth)  ; record, increment in
-             (when (functionp weight)
+             (when (symbolp weight)
                (setq weight (funcall weight node)))
+             ;; The first value is plus, second is times.
              (cl-incf score (* (+ nested (car weight)) (cdr weight)))))
          tree-sitter-tree))
       score)))
@@ -145,13 +146,31 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
   "Define score for Java outer loop (jump), `break' and `continue' statements.
 
 For arguments NODE, see function `TODO' for more information."
-  (if (<= (tsc-count-children node) 2) (0 . 0) (1 . 1)))
+  (cl-case codemetrics-complexity
+    (`cognitive (if (<= (tsc-count-children node) 2) '(0 . 0) '(1 . 1)))
+    (`cyclomatic '(0 . 0))))
 
 (defun codemetrics-score-java-logical-operators (node)
   "Define score for Java logical operators.
 
 For arguments NODE, see function `TODO' for more information."
-  (0 . 0))
+  (cl-case codemetrics-complexity
+    (`cognitive
+     (let ((parent (tsc-get-parent node))
+           (sequnce nil))
+       (message "------")
+       (tsc-mapc-children
+        (lambda (child)
+          (message "? %s %s %s"
+                   (tsc-node-text child)
+                   (member (tsc-node-type child) '("||" "&&"))
+                   (tsc-node-eq node child))
+          (when (and (not (tsc-node-eq node child))
+                     (member (tsc-node-type child) '("||" "&&")))
+            (setq sequnce t)))
+        parent)
+       (if sequnce '(1 . 1) '(0 . 0))))
+    (`cyclomatic '(1 . 1))))
 
 (provide 'codemetrics)
 ;;; codemetrics.el ends here
