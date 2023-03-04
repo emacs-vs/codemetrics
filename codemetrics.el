@@ -65,6 +65,11 @@ WEIGHT is used to determine the final score."
                 :value-type (alist :key-type symbol :value-type function))
   :group 'codemetrics)
 
+(defcustom codemetrics-percent-score 8.0
+  "The score represnet 100 percent."
+  :type 'float
+  :group 'codemetrics)
+
 ;;
 ;; (@* "Logger" )
 ;;
@@ -76,6 +81,9 @@ WEIGHT is used to determine the final score."
   "Debug message like function `message' with same argument FMT and ARGS."
   (when codemetrics--debug-mode
     (apply 'message fmt args)))
+
+(defvar codemetrics--recursion-identifier nil
+  "Record recursion identifier for increment.")
 
 ;;
 ;; (@* "Util" )
@@ -105,9 +113,32 @@ For arguments STR, START, and END, see function `s-count-matches' for details."
       number
     (1+ number)))
 
+(defun codemetrics--tsc-compare-type (node type)
+  "Compare NODE's type to TYPE."
+  ;; tsc-node-type returns a symbol or a string and `string=' automatically
+  ;; converts symbols to strings
+  (string= (tsc-node-type node) type))
+
+(defun codemetrics--get-children (node)
+  "Get list of direct children of NODE."
+  (let (children)
+    (dotimes (index (tsc-count-children node))
+      (push (tsc-get-nth-child node index) children))
+    (reverse children)))
+
+(defun codemetrics--tsc-find-children (node type)
+  "Search through the children of NODE to find all with type equal to TYPE;
+then return that list."
+  (cl-remove-if-not (lambda (child) (codemetrics--tsc-compare-type child type))
+                    (codemetrics--get-children node)))
+
 ;;
 ;; (@* "Core" )
 ;;
+
+(defun codemetrics-percentage (score)
+  "Calculate percentage from SCORE."
+  (floor (* (/ score codemetrics-percent-score) 100.0)))
 
 (defun codemetrics--rules (&optional mode)
   "Return rules from major (MODE)."
@@ -139,7 +170,9 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
            (rules (codemetrics--rules mode))
            (nested-level)  ; this is the "starting" nested level
            (nested 0)
-           (score 0))
+           (score 0)
+           ;; Global Records
+           (codemetrics--recursion-identifier))
       (with-temp-buffer
         (insert content)
         (delay-mode-hooks (funcall mode))
@@ -188,6 +221,18 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
 ;; (@* "Languages" )
 ;;
 
+(defun codemetrics-rules-recursion (node &rest _)
+  "Handle recursion for most languages uses `identifier' as the keyword."
+  (cl-case codemetrics-complexity
+    (`cognitive
+     (let ((identifier (car (codemetrics--tsc-find-children node "identifier"))))
+       (if (equal (tsc-node-text identifier)
+                  codemetrics--recursion-identifier)
+           '(1 nil)
+         '(0 nil))))
+    ;; do nothing
+    (`cyclomatic '(0 nil))))
+
 (defun codemetrics-rules-java-class-declaration (_node depth _nested)
   "Define weight for Java `class' declaration.
 
@@ -199,12 +244,17 @@ For argument DEPTH, see function `codemetrics-analyze' for more information."
        '(0 nil)))
     (`cyclomatic '(1 nil))))
 
-(defun codemetrics-rules-java-method-declaration (_node depth nested)
+(defun codemetrics-rules-java-method-declaration (node depth nested)
   "Define weight for Java `method' declaration.
 
-For argument NESTED, see function `codemetrics-analyze' for more information."
+For arguments NODE, DEPTH, and NESTED, see function `codemetrics-analyze' for
+more information."
+  ;; XXX: Record the recursion method name (identifier)
+  (setq codemetrics--recursion-identifier
+        (tsc-node-text (car (codemetrics--tsc-find-children node "identifier"))))
   (cl-case codemetrics-complexity
-    (`cognitive (if (or (<= 5 depth ) (<= 3 nested))
+    ;; These magic numbers are observed by TreeSitter AST.
+    (`cognitive (if (or (<= 5 depth) (<= 3 nested))
                     '(1 nil)
                   '(0 nil)))
     (`cyclomatic '(1 nil))))

@@ -91,7 +91,8 @@
     ("&&"               . codemetrics-rules-java-logical-operators)
     ("||"               . codemetrics-rules-java-logical-operators)
     (continue_statement . codemetrics-rules-java-outer-loop)
-    (break_statement    . codemetrics-rules-java-outer-loop)))
+    (break_statement    . codemetrics-rules-java-outer-loop)
+    (method_invocation  . codemetrics-rules-recursion)))
 
 (defun codemetrics-rules-lua ()
   "Return rules for Lua."
