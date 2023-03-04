@@ -20,8 +20,6 @@ which was proposed by G. Ann Campbell in
 > produce a measurement that more accurately reflects the relative difficulty of
 > understanding, and therefore of maintaining methods, classes, and applications.
 
-## Configuration
-
 ## 🖥 Usage
 
 These are functions you can use to analyze:

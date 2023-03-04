@@ -30,6 +30,7 @@
 
 ;; TODO(everyone): keep the forward declared alphabetically sorted
 
+(declare-function codemetrics-rules-recursion "codemetrics.el")
 (declare-function codemetrics-rules-java-class-declaration "codemetrics.el")
 (declare-function codemetrics-rules-java-method-declaration "codemetrics.el")
 (declare-function codemetrics-rules-java-outer-loop "codemetrics.el")
