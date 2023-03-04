@@ -23,13 +23,23 @@ All these functions returns a score indicates the complexity.
 
 These languages are fairly complete:
 
-- C#
+- C / C++ / C#
 - Java
 
 These languages are in development:
 
-- C
-- C++
+- Agda
+- Elm
+- Emacs Lisp
+- Go
+- JavaScript
+- Lua
+- OCaml
+- PHP / Python
+- Ruby / Rust
+- Scala / Swift
+- TypeScript / TSX
+- XML (upstream)
 
 ## 🔗 References
 

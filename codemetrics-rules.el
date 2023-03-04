@@ -73,6 +73,10 @@
     ("&&"               . codemetrics-rules-java-logical-operators)
     ("||"               . codemetrics-rules-java-logical-operators)))
 
+(defun codemetrics-rules-go ()
+  "Return rules for Go."
+  `())
+
 (defun codemetrics-rules-java ()
   "Return rules for Java."
   `((class_declaration  . codemetrics-rules-java-class-declaration)
@@ -88,6 +92,10 @@
     ("||"               . codemetrics-rules-java-logical-operators)
     (continue_statement . codemetrics-rules-java-outer-loop)
     (break_statement    . codemetrics-rules-java-outer-loop)))
+
+(defun codemetrics-rules-lua ()
+  "Return rules for Lua."
+  `())
 
 (provide 'codemetrics-rules)
 ;;; codemetrics-rules.el ends here

@@ -55,7 +55,9 @@
   `((c-mode      . ,(codemetrics-rules-c))
     (c++-mode    . ,(codemetrics-rules-c++))
     (csharp-mode . ,(codemetrics-rules-csharp))
-    (java-mode   . ,(codemetrics-rules-java)))
+    (go-mode     . ,(codemetrics-rules-go))
+    (java-mode   . ,(codemetrics-rules-java))
+    (lua-mode    . ,(codemetrics-rules-lua)))
   "An alist of (major-mode . (node-type . weight)).
 
 WEIGHT is used to determine the final score."
