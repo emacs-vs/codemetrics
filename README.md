@@ -6,6 +6,31 @@
 
 [![CI](https://github.com/jcs-elpa/codemetrics/actions/workflows/test.yml/badge.svg)](https://github.com/jcs-elpa/codemetrics/actions/workflows/test.yml)
 
+## 🖥 Usage
+
+These are functions you can use to analyze:
+
+| Functions             | Description                        |
+|-----------------------|------------------------------------|
+| `codemetrics-analyze` | Analyze a string with `major-mode` |
+| `codemetrics-region`  | Analyze region                     |
+| `codemetrics-buffer`  | Analyze the whole buffer           |
+
+All these functions returns a score indicates the complexity.
+
+## 🔨 Supported languages
+> ⚠️ Please sort these two lists alphabetically!
+
+These languages are fairly complete:
+
+- C#
+- Java
+
+These languages are in development:
+
+- C
+- C++
+
 ## 🔗 References
 
 - [codemetrics](https://github.com/kisstkondoros/codemetrics)
@@ -23,4 +48,3 @@ If you would like to contribute to this project, you may either
 clone and make pull requests to this repository. Or you can
 clone the project and establish your own branch of this tool.
 Any methods are welcome!
-
