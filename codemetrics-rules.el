@@ -24,6 +24,21 @@
 
 ;;; Code:
 
+;;
+;; (@* "Externals" )
+;;
+
+;; TODO(everyone): keep the forward declared alphabetically sorted
+
+(declare-function codemetrics-score-java-outer-loop "codemetrics.el")
+(declare-function codemetrics-score-java-logical-operators "codemetrics.el")
+
+;;
+;; (@* "Rules" )
+;;
+
+;; TODO(everyone): keep the function alphabetically sorted
+
 (defun codemetrics-rules-csharp ()
   "Return weight rules for C#."
   `((class_declaration  . (1 . 1))
