@@ -30,9 +30,10 @@
 
 ;; TODO(everyone): keep the forward declared alphabetically sorted
 
-(declare-function codemetrics-weight-java-declaration "codemetrics.el")
-(declare-function codemetrics-weight-java-outer-loop "codemetrics.el")
-(declare-function codemetrics-weight-java-logical-operators "codemetrics.el")
+(declare-function codemetrics-rules-java-class-declaration "codemetrics.el")
+(declare-function codemetrics-rules-java-method-declaration "codemetrics.el")
+(declare-function codemetrics-rules-java-outer-loop "codemetrics.el")
+(declare-function codemetrics-rules-java-logical-operators "codemetrics.el")
 
 ;;
 ;; (@* "Rules" )
@@ -40,31 +41,50 @@
 
 ;; TODO(everyone): keep the function alphabetically sorted
 
+(defun codemetrics-rules-c ()
+  "Return rules for C."
+  `((function_definition . codemetrics-rules-java-method-declaration)
+    (if_statement        . (1 t))
+    (switch_statement    . (1 t))
+    (while_statement     . (1 t))
+    (for_statement       . (1 t))
+    (do_statement        . (1 t))
+    ("&&"                . codemetrics-rules-java-logical-operators)
+    ("||"                . codemetrics-rules-java-logical-operators)))
+
+(defun codemetrics-rules-c++ ()
+  "Return rules for C++."
+  (append
+   (codemetrics-rules-c)
+   `((class_declaration   . codemetrics-rules-java-class-declaration))))
+
 (defun codemetrics-rules-csharp ()
-  "Return weight rules for C#."
-  `((class_declaration  . 1)
-    (method_declaration . 1)
-    (if_statement       . 1)
-    (switch_statement   . 1)
-    (while_statement    . 1)
-    (for_statement      . 1)
-    (do_statement       . 1)))
+  "Return rules for C#."
+  `((class_declaration  . codemetrics-rules-java-class-declaration)
+    (method_declaration . codemetrics-rules-java-method-declaration)
+    (if_statement       . (1 t))
+    (switch_statement   . (1 t))
+    (while_statement    . (1 t))
+    (for_statement      . (1 t))
+    (do_statement       . (1 t))
+    ("&&"               . codemetrics-rules-java-logical-operators)
+    ("||"               . codemetrics-rules-java-logical-operators)))
 
 (defun codemetrics-rules-java ()
-  "Return weight rules for Java."
-  `((class_declaration  . codemetrics-weight-java-declaration)
-    (method_declaration . codemetrics-weight-java-declaration)
-    (lambda_expression  . 0)  ; increase level, but don't score
-    (if_statement       . 1)
-    (switch_expression  . 1)
-    (while_statement    . 1)
-    (for_statement      . 1)
-    (do_statement       . 1)
-    (catch_clause       . 1)
-    ("&&"               . codemetrics-weight-java-logical-operators)
-    ("||"               . codemetrics-weight-java-logical-operators)
-    (continue_statement . codemetrics-weight-java-outer-loop)
-    (break_statement    . codemetrics-weight-java-outer-loop)))
+  "Return rules for Java."
+  `((class_declaration  . codemetrics-rules-java-class-declaration)
+    (method_declaration . codemetrics-rules-java-method-declaration)
+    (lambda_expression  . (0 t))
+    (if_statement       . (1 t))
+    (switch_expression  . (1 t))
+    (while_statement    . (1 t))
+    (for_statement      . (1 t))
+    (do_statement       . (1 t))
+    (catch_clause       . (1 t))
+    ("&&"               . codemetrics-rules-java-logical-operators)
+    ("||"               . codemetrics-rules-java-logical-operators)
+    (continue_statement . codemetrics-rules-java-outer-loop)
+    (break_statement    . codemetrics-rules-java-outer-loop)))
 
 (provide 'codemetrics-rules)
 ;;; codemetrics-rules.el ends here

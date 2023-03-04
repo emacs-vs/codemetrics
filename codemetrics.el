@@ -51,7 +51,9 @@
   :group 'codemetrics)
 
 (defcustom codemetrics-rules
-  `((csharp-mode . ,(codemetrics-rules-csharp))
+  `((c-mode      . ,(codemetrics-rules-c))
+    (c++-mode    . ,(codemetrics-rules-c++))
+    (csharp-mode . ,(codemetrics-rules-csharp))
     (java-mode   . ,(codemetrics-rules-java)))
   "An alist of (major-mode . (node-type . weight)).
 
@@ -94,11 +96,11 @@ For arguments STR, START, and END, see function `s-count-matches' for details."
            count))
         (t (s-count-matches regexp str start end))))
 
-(defun codemetrics--make-even (num)
-  ""
-  (if (zerop (% num 2))
-      num
-    (1+ num)))
+(defun codemetrics--make-even (number)
+  "Ensure NUMBER is a even number."
+  (if (zerop (% number 2))
+      number
+    (1+ number)))
 
 ;;
 ;; (@* "Core" )
@@ -130,43 +132,46 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
 (defun codemetrics-analyze (content &optional mode)
   "Analyze CONTENT in major (MODE), the code."
   (codemetrics--ensure-ts
-   (let* ((mode (or mode major-mode))
-          (rules (codemetrics--rules mode))
-          (nested-level)
-          (score 0))
-     (with-temp-buffer
-       (insert content)
-       (delay-mode-hooks (funcall mode))
-       (tree-sitter-mode 1)
-       (codemetrics--tsc-traverse-mapc
-        (lambda (node depth)
-          (when (and nested-level
-                     (< depth nested-level))  ; decrement out
-            (setq nested-level nil))
-          (when-let* ((type (tsc-node-type node))
-                      (rule (assoc type rules))
-                      (weight (cdr rule))
-                      ;; XXX: Divide by two is cause by TreeSitter AST.
-                      (nested (if nested-level
-                                  (1+ (/ (codemetrics--make-even
-                                          (- depth nested-level))
-                                         2))
-                                1)))
-            (codemetrics--log "depth: %s, nested-level: %s, nested: %s"
-                              depth nested-level nested)
-            (unless nested-level
-              (setq nested-level depth))
-            (let ((node-score (if (symbolp weight) (funcall weight node)
-                                (* nested weight))))
-              (codemetrics--log "%s" (cons type node-score))
-              ;; The first value is plus, second is times.
-              (cl-incf score node-score))))
-        tree-sitter-tree))
-     score)))
+    (let* ((mode (or mode major-mode))
+           (rules (codemetrics--rules mode))
+           (nested-level)  ; this is the "starting" nested level
+           (nested 0)
+           (score 0))
+      (with-temp-buffer
+        (insert content)
+        (delay-mode-hooks (funcall mode))
+        (tree-sitter-mode 1)
+        (codemetrics--tsc-traverse-mapc
+         (lambda (node depth)
+           (when (and nested-level
+                      (< depth nested-level))  ; decrement out
+             (setq nested-level nil
+                   nested 0))
+           (when-let* ((type (tsc-node-type node))
+                       (a-rule (assoc type rules))  ; cons
+                       (rule (cdr a-rule)))
+             (let* ((data (if (symbolp rule)
+                              (funcall rule node depth nested)
+                            rule))
+                    (weight (nth 0 data))
+                    (inc-nested (nth 1 data)))
+               (when inc-nested
+                 (if (null nested-level)
+                     (setq nested-level depth
+                           nested 0)
+                   (cl-incf nested)))
+               (codemetrics--log "depth: %s, nested-level: %s, nested: %s"
+                                 depth nested-level nested)
+               (let ((node-score (+ weight nested)))
+                 (codemetrics--log "%s" (cons type node-score))
+                 ;; The first value is plus, second is times.
+                 (cl-incf score node-score)))))
+         tree-sitter-tree))
+      score)))
 
 ;;;###autoload
 (defun codemetrics-region (&optional beg end)
-  "Analyze the region."
+  "Analyze the region, from BEG to END."
   (let ((beg (or beg (if (use-region-p) (region-beginning) (point-min))))
         (end (or end (if (use-region-p) (region-end)       (point-max)))))
     (codemetrics-analyze (buffer-substring beg end))))
@@ -180,34 +185,47 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
 ;; (@* "Languages" )
 ;;
 
-(defun codemetrics-weight-java-declaration (_node)
-  "Define weight for Java `class' and `method' declaration.
+(defun codemetrics-rules-java-class-declaration (_node depth _nested)
+  "Define weight for Java `class' declaration.
 
-For arguments NODE, see function `TODO' for more information."
+For argument DEPTH, see function `codemetrics-analyze' for more information."
   (cl-case codemetrics-complexity
-    (`cognitive  0)
-    (`cyclomatic 1)))
+    (`cognitive
+     (if (< 1 depth)  ; if class inside class,
+         '(1 nil)     ; we score 1, but don't increase nested level
+       '(0 nil)))
+    (`cyclomatic '(1 nil))))
 
-(defun codemetrics-weight-java-outer-loop (node)
+(defun codemetrics-rules-java-method-declaration (_node depth nested)
+  "Define weight for Java `method' declaration.
+
+For argument NESTED, see function `codemetrics-analyze' for more information."
+  (cl-case codemetrics-complexity
+    (`cognitive (if (or (<= 5 depth ) (<= 3 nested))
+                    '(1 nil)
+                  '(0 nil)))
+    (`cyclomatic '(1 nil))))
+
+(defun codemetrics-rules-java-outer-loop (node &rest _)
   "Define weight for Java outer loop (jump), `break' and `continue' statements.
 
-For arguments NODE, see function `TODO' for more information."
+For argument NODE, see function `codemetrics-analyze' for more information."
   (cl-case codemetrics-complexity
-    (`cognitive (if (<= (tsc-count-children node) 2) 0 1))
-    (`cyclomatic 0)))
+    (`cognitive (list (if (<= (tsc-count-children node) 2) 0 1) nil))
+    (`cyclomatic '(0 nil))))
 
-(defun codemetrics-weight-java-logical-operators (node)
+(defun codemetrics-rules-java-logical-operators (node &rest _)
   "Define weight for Java logical operators.
 
-For arguments NODE, see function `TODO' for more information."
+For argument NODE, see function `codemetrics-analyze' for more information."
   (cl-case codemetrics-complexity
     (`cognitive
      (let ((parent (tsc-get-parent node))
            (sequence nil))
        (when (<= 2 (codemetrics--s-count-matches '("||" "&&") (tsc-node-text parent)))
          (setq sequence t))
-       (if sequence 1 0)))
-    (`cyclomatic 1)))
+       (list (if sequence 1 0) nil)))
+    (`cyclomatic '(1 nil))))
 
 (provide 'codemetrics)
 ;;; codemetrics.el ends here
