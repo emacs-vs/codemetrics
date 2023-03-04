@@ -6,6 +6,22 @@
 
 [![CI](https://github.com/jcs-elpa/codemetrics/actions/workflows/test.yml/badge.svg)](https://github.com/jcs-elpa/codemetrics/actions/workflows/test.yml)
 
+This plugin implements live calculation of the **Cognitive Complexity** metric,
+which was proposed by G. Ann Campbell in
+[Cognitive Complexity - A new way of measuring understandability](https://www.sonarsource.com/docs/CognitiveComplexity.pdf)
+(c) SonarSource S.A. 2016-2021, Switzerland.
+
+> **Abstract:** Cyclomatic Complexity was initially formulated as a measurement
+> of the "testability and maintainability" of the control flow of a module.
+> While it excels at measuring the former, its underlying mathematical model is
+> unsatisfactory at producing a value that measures the latter. This white paper
+> describes a new metric that breaks from the use of mathematical models to
+> evaluate code in order to remedy Cyclomatic Complexity’s shortcomings and
+> produce a measurement that more accurately reflects the relative difficulty of
+> understanding, and therefore of maintaining methods, classes, and applications.
+
+## Configuration
+
 ## 🖥 Usage
 
 These are functions you can use to analyze:
@@ -32,7 +48,7 @@ These languages are in development:
 - Elm
 - Emacs Lisp
 - Go
-- JavaScript
+- JavaScript / JSX / Julia
 - Lua
 - OCaml
 - PHP / Python
