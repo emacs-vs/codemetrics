@@ -6,7 +6,7 @@
 ;; Maintainer: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; URL: https://github.com/jcs-elpa/codemetrics
 ;; Version: 0.1.0
-;; Package-Requires: ((emacs "26.1") (tree-sitter "0.15.1"))
+;; Package-Requires: ((emacs "26.1") (tree-sitter "0.15.1") (s "1.12.0"))
 ;; Keywords: convenience complexity
 
 ;; This file is not part of GNU Emacs.
@@ -34,6 +34,7 @@
 (require 'cl-lib)
 (require 'pcase)
 
+(require 's)
 (require 'tree-sitter)
 
 (require 'codemetrics-rules)
