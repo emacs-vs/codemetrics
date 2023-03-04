@@ -61,6 +61,18 @@ WEIGHT is used to determine the final score."
   :group 'codemetrics)
 
 ;;
+;; (@* "Logger" )
+;;
+
+(defvar codemetrics--debug-mode nil
+  "Get more information from the program.")
+
+(defun codemetrics--log (fmt &rest args)
+  "Debug message like function `message' with same argument FMT and ARGS."
+  (when codemetrics--debug-mode
+    (apply 'message fmt args)))
+
+;;
 ;; (@* "Util" )
 ;;
 
@@ -81,6 +93,12 @@ For arguments STR, START, and END, see function `s-count-matches' for details."
              (cl-incf count (s-count-matches regex str start end)))
            count))
         (t (s-count-matches regexp str start end))))
+
+(defun codemetrics--make-even (num)
+  ""
+  (if (zerop (% num 2))
+      num
+    (1+ num)))
 
 ;;
 ;; (@* "Core" )
@@ -114,7 +132,7 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
   (codemetrics--ensure-ts
     (let* ((mode (or mode major-mode))
            (rules (codemetrics--rules mode))
-           (nested-level 0)
+           (nested-level)
            (nest 0)
            (score 0))
       (with-temp-buffer
@@ -123,17 +141,27 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
         (tree-sitter-mode 1)
         (codemetrics--tsc-traverse-mapc
          (lambda (node depth)
-           (when (< depth nested-level)  ; decrement out
-             (setq nested-level depth))
+           (when (and nested-level
+                      (< depth nested-level))  ; decrement out
+             (setq nested-level nil))
            (when-let* ((type (tsc-node-type node))
                        (rule (assoc type rules))
                        (weight (cdr rule))
-                       (nested (if (< nested-level depth) 1 0)))
-             (setq nested-level depth)  ; record, increment in
-             (when (symbolp weight)
-               (setq weight (funcall weight node)))
-             ;; The first value is plus, second is times.
-             (cl-incf score (* (+ nested (car weight)) (cdr weight)))))
+                       ;; XXX: Divide by two is cause by TreeSitter AST.
+                       (nested (if nested-level
+                                   (1+ (/ (codemetrics--make-even
+                                           (- depth nested-level))
+                                          2))
+                                 1)))
+             (codemetrics--log "depth: %s, nested-level: %s, nested: %s"
+                               depth nested-level nested)
+             (unless nested-level
+               (setq nested-level depth))
+             (let ((node-score (if (symbolp weight) (funcall weight node)
+                                 (* nested weight))))
+               (codemetrics--log "%s" (cons type node-score))
+               ;; The first value is plus, second is times.
+               (cl-incf score node-score))))
          tree-sitter-tree))
       score)))
 
@@ -153,16 +181,24 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
 ;; (@* "Languages" )
 ;;
 
-(defun codemetrics-score-java-outer-loop (node)
-  "Define score for Java outer loop (jump), `break' and `continue' statements.
+(defun codemetrics-weight-java-declaration (node)
+  "Define weight for Java `class' and `method' declaration.
 
 For arguments NODE, see function `TODO' for more information."
   (cl-case codemetrics-complexity
-    (`cognitive (if (<= (tsc-count-children node) 2) '(0 . 0) '(1 . 1)))
-    (`cyclomatic '(0 . 0))))
+    (`cognitive  0)
+    (`cyclomatic 1)))
 
-(defun codemetrics-score-java-logical-operators (node)
-  "Define score for Java logical operators.
+(defun codemetrics-weight-java-outer-loop (node)
+  "Define weight for Java outer loop (jump), `break' and `continue' statements.
+
+For arguments NODE, see function `TODO' for more information."
+  (cl-case codemetrics-complexity
+    (`cognitive (if (<= (tsc-count-children node) 2) 0 1))
+    (`cyclomatic 0)))
+
+(defun codemetrics-weight-java-logical-operators (node)
+  "Define weight for Java logical operators.
 
 For arguments NODE, see function `TODO' for more information."
   (cl-case codemetrics-complexity
@@ -171,8 +207,8 @@ For arguments NODE, see function `TODO' for more information."
            (sequence nil))
        (when (<= 2 (codemetrics--s-count-matches '("||" "&&") (tsc-node-text parent)))
          (setq sequence t))
-       (if sequence '(1 . 1) '(0 . 0))))
-    (`cyclomatic '(1 . 1))))
+       (if sequence 1 0)))
+    (`cyclomatic 1)))
 
 (provide 'codemetrics)
 ;;; codemetrics.el ends here

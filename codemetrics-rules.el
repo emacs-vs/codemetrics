@@ -30,8 +30,9 @@
 
 ;; TODO(everyone): keep the forward declared alphabetically sorted
 
-(declare-function codemetrics-score-java-outer-loop "codemetrics.el")
-(declare-function codemetrics-score-java-logical-operators "codemetrics.el")
+(declare-function codemetrics-weight-java-declaration "codemetrics.el")
+(declare-function codemetrics-weight-java-outer-loop "codemetrics.el")
+(declare-function codemetrics-weight-java-logical-operators "codemetrics.el")
 
 ;;
 ;; (@* "Rules" )
@@ -41,28 +42,29 @@
 
 (defun codemetrics-rules-csharp ()
   "Return weight rules for C#."
-  `((class_declaration  . (1 . 1))
-    (method_declaration . (1 . 1))
-    (if_statement       . (1 . 1))
-    (switch_statement   . (1 . 1))
-    (while_statement    . (1 . 1))
-    (for_statement      . (1 . 1))
-    (do_statement       . (1 . 1))))
+  `((class_declaration  . 1)
+    (method_declaration . 1)
+    (if_statement       . 1)
+    (switch_statement   . 1)
+    (while_statement    . 1)
+    (for_statement      . 1)
+    (do_statement       . 1)))
 
 (defun codemetrics-rules-java ()
   "Return weight rules for Java."
-  `((class_declaration  . (1 . 1))
-    (method_declaration . (1 . 1))
-    (if_statement       . (1 . 1))
-    (switch_statement   . (1 . 1))
-    (while_statement    . (1 . 1))
-    (for_statement      . (1 . 1))
-    (do_statement       . (1 . 1))
-    (catch_clause       . (1 . 1))
-    ("&&"               . codemetrics-score-java-logical-operators)
-    ("||"               . codemetrics-score-java-logical-operators)
-    (continue_statement . codemetrics-score-java-outer-loop)
-    (break_statement    . codemetrics-score-java-outer-loop)))
+  `((class_declaration  . codemetrics-weight-java-declaration)
+    (method_declaration . codemetrics-weight-java-declaration)
+    (lambda_expression  . 0)  ; increase level, but don't score
+    (if_statement       . 1)
+    (switch_expression  . 1)
+    (while_statement    . 1)
+    (for_statement      . 1)
+    (do_statement       . 1)
+    (catch_clause       . 1)
+    ("&&"               . codemetrics-weight-java-logical-operators)
+    ("||"               . codemetrics-weight-java-logical-operators)
+    (continue_statement . codemetrics-weight-java-outer-loop)
+    (break_statement    . codemetrics-weight-java-outer-loop)))
 
 (provide 'codemetrics-rules)
 ;;; codemetrics-rules.el ends here
