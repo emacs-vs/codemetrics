@@ -46,6 +46,7 @@
   "Return rules for C."
   `((function_definition . codemetrics-rules-java-method-declaration)
     (lambda_expression   . (1 t))
+    (preproc_ifdef       . (1 t))
     (if_statement        . (1 t))
     (switch_statement    . (1 t))
     (while_statement     . (1 t))
@@ -53,7 +54,8 @@
     (do_statement        . (1 t))
     ("&&"                . codemetrics-rules-java-logical-operators)
     ("||"                . codemetrics-rules-java-logical-operators)
-    (goto_statement      . (1 t))))
+    (goto_statement      . (1 t))
+    (call_expression     . codemetrics-rules-recursion)))
 
 (defun codemetrics-rules-c++ ()
   "Return rules for C++."
@@ -63,16 +65,17 @@
 
 (defun codemetrics-rules-csharp ()
   "Return rules for C#."
-  `((class_declaration  . codemetrics-rules-java-class-declaration)
-    (method_declaration . codemetrics-rules-java-method-declaration)
-    (lambda_expression  . (0 t))  ; don't score, but increase nested level
-    (if_statement       . (1 t))
-    (switch_statement   . (1 t))
-    (while_statement    . (1 t))
-    (for_statement      . (1 t))
-    (do_statement       . (1 t))
-    ("&&"               . codemetrics-rules-java-logical-operators)
-    ("||"               . codemetrics-rules-java-logical-operators)))
+  `((class_declaration     . codemetrics-rules-java-class-declaration)
+    (method_declaration    . codemetrics-rules-java-method-declaration)
+    (lambda_expression     . (0 t))  ; don't score, but increase nested level
+    (if_statement          . (1 t))
+    (switch_statement      . (1 t))
+    (while_statement       . (1 t))
+    (for_statement         . (1 t))
+    (do_statement          . (1 t))
+    ("&&"                  . codemetrics-rules-java-logical-operators)
+    ("||"                  . codemetrics-rules-java-logical-operators)
+    (invocation_expression . codemetrics-rules-recursion)))
 
 (defun codemetrics-rules-go ()
   "Return rules for Go."

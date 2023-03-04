@@ -180,7 +180,7 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
         (codemetrics--tsc-traverse-mapc
          (lambda (node depth)
            (when (and nested-level
-                      (< depth nested-level))  ; decrement out
+                      (<= depth nested-level))  ; decrement out
              (setq nested-level nil
                    nested 0))
            (when-let* ((type (tsc-node-type node))
