@@ -130,40 +130,39 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
 (defun codemetrics-analyze (content &optional mode)
   "Analyze CONTENT in major (MODE), the code."
   (codemetrics--ensure-ts
-    (let* ((mode (or mode major-mode))
-           (rules (codemetrics--rules mode))
-           (nested-level)
-           (nest 0)
-           (score 0))
-      (with-temp-buffer
-        (insert content)
-        (delay-mode-hooks (funcall mode))
-        (tree-sitter-mode 1)
-        (codemetrics--tsc-traverse-mapc
-         (lambda (node depth)
-           (when (and nested-level
-                      (< depth nested-level))  ; decrement out
-             (setq nested-level nil))
-           (when-let* ((type (tsc-node-type node))
-                       (rule (assoc type rules))
-                       (weight (cdr rule))
-                       ;; XXX: Divide by two is cause by TreeSitter AST.
-                       (nested (if nested-level
-                                   (1+ (/ (codemetrics--make-even
-                                           (- depth nested-level))
-                                          2))
-                                 1)))
-             (codemetrics--log "depth: %s, nested-level: %s, nested: %s"
-                               depth nested-level nested)
-             (unless nested-level
-               (setq nested-level depth))
-             (let ((node-score (if (symbolp weight) (funcall weight node)
-                                 (* nested weight))))
-               (codemetrics--log "%s" (cons type node-score))
-               ;; The first value is plus, second is times.
-               (cl-incf score node-score))))
-         tree-sitter-tree))
-      score)))
+   (let* ((mode (or mode major-mode))
+          (rules (codemetrics--rules mode))
+          (nested-level)
+          (score 0))
+     (with-temp-buffer
+       (insert content)
+       (delay-mode-hooks (funcall mode))
+       (tree-sitter-mode 1)
+       (codemetrics--tsc-traverse-mapc
+        (lambda (node depth)
+          (when (and nested-level
+                     (< depth nested-level))  ; decrement out
+            (setq nested-level nil))
+          (when-let* ((type (tsc-node-type node))
+                      (rule (assoc type rules))
+                      (weight (cdr rule))
+                      ;; XXX: Divide by two is cause by TreeSitter AST.
+                      (nested (if nested-level
+                                  (1+ (/ (codemetrics--make-even
+                                          (- depth nested-level))
+                                         2))
+                                1)))
+            (codemetrics--log "depth: %s, nested-level: %s, nested: %s"
+                              depth nested-level nested)
+            (unless nested-level
+              (setq nested-level depth))
+            (let ((node-score (if (symbolp weight) (funcall weight node)
+                                (* nested weight))))
+              (codemetrics--log "%s" (cons type node-score))
+              ;; The first value is plus, second is times.
+              (cl-incf score node-score))))
+        tree-sitter-tree))
+     score)))
 
 ;;;###autoload
 (defun codemetrics-region (&optional beg end)
@@ -181,7 +180,7 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
 ;; (@* "Languages" )
 ;;
 
-(defun codemetrics-weight-java-declaration (node)
+(defun codemetrics-weight-java-declaration (_node)
   "Define weight for Java `class' and `method' declaration.
 
 For arguments NODE, see function `TODO' for more information."
