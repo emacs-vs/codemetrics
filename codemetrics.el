@@ -71,6 +71,17 @@ WEIGHT is used to determine the final score."
        (progn ,@body)
      (user-error "Tree-Sitter mode is not enabled for this buffer!")))
 
+(defun codemetrics--s-count-matches (regexp str &optional start end)
+  "Like function `s-count-matches' but accept list in REGEXP.
+
+For arguments STR, START, and END, see function `s-count-matches' for details."
+  (cond ((listp regexp)
+         (let ((count 0))
+           (dolist (regex regexp)
+             (cl-incf count (s-count-matches regex str start end)))
+           count))
+        (t (s-count-matches regexp str start end))))
+
 ;;
 ;; (@* "Core" )
 ;;
@@ -127,10 +138,10 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
       score)))
 
 ;;;###autoload
-(defun codemetrics-region (beg end)
+(defun codemetrics-region (&optional beg end)
   "Analyze the region."
-  (let ((beg (or beg (point-min)))
-        (end (or end (point-max))))
+  (let ((beg (or beg (if (use-region-p) (region-beginning) (point-min))))
+        (end (or end (if (use-region-p) (region-end)       (point-max)))))
     (codemetrics-analyze (buffer-substring beg end))))
 
 ;;;###autoload
@@ -157,19 +168,10 @@ For arguments NODE, see function `TODO' for more information."
   (cl-case codemetrics-complexity
     (`cognitive
      (let ((parent (tsc-get-parent node))
-           (sequnce nil))
-       (message "------")
-       (tsc-mapc-children
-        (lambda (child)
-          (message "? %s %s %s"
-                   (tsc-node-text child)
-                   (member (tsc-node-type child) '("||" "&&"))
-                   (tsc-node-eq node child))
-          (when (and (not (tsc-node-eq node child))
-                     (member (tsc-node-type child) '("||" "&&")))
-            (setq sequnce t)))
-        parent)
-       (if sequnce '(1 . 1) '(0 . 0))))
+           (sequence nil))
+       (when (<= 2 (codemetrics--s-count-matches '("||" "&&") (tsc-node-text parent)))
+         (setq sequence t))
+       (if sequence '(1 . 1) '(0 . 0))))
     (`cyclomatic '(1 . 1))))
 
 (provide 'codemetrics)
