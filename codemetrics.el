@@ -96,6 +96,12 @@ WEIGHT is used to determine the final score."
        (progn ,@body)
      (user-error "Tree-Sitter mode is not enabled for this buffer!")))
 
+(defmacro codemetrics--with-current-buffer (buffer-or-name &rest body)
+  "Safely execute BODY when BUFFER-OR-NAME is displayed."
+  (declare (indent 1))
+  `(when (get-buffer-window ,buffer-or-name)
+     (with-current-buffer ,buffer-or-name ,@body)))
+
 (defun codemetrics--s-count-matches (regexp str &optional start end)
   "Like function `s-count-matches' but accept list in REGEXP.
 
@@ -171,6 +177,7 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
            (nested-level)  ; this is the "starting" nested level
            (nested 0)
            (score 0)
+           (data)
            ;; Global Records
            (codemetrics--recursion-identifier))
       (with-temp-buffer
@@ -186,11 +193,11 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
            (when-let* ((type (tsc-node-type node))
                        (a-rule (assoc type rules))  ; cons
                        (rule (cdr a-rule)))
-             (let* ((data (if (symbolp rule)
-                              (funcall rule node depth nested)
-                            rule))
-                    (weight (nth 0 data))
-                    (inc-nested (nth 1 data)))
+             (let* ((rules-data (if (symbolp rule)
+                                    (funcall rule node depth nested)
+                                  rule))
+                    (weight (nth 0 rules-data))
+                    (inc-nested (nth 1 rules-data)))
                (when inc-nested
                  (if (null nested-level)
                      (setq nested-level depth
@@ -200,10 +207,11 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
                                  depth nested-level nested)
                (let ((node-score (+ weight nested)))
                  (codemetrics--log "%s" (cons type node-score))
+                 (push (list node node-score depth) data)
                  ;; The first value is plus, second is times.
                  (cl-incf score node-score)))))
          tree-sitter-tree))
-      score)))
+      (cons score (reverse data)))))
 
 ;;;###autoload
 (defun codemetrics-region (&optional beg end)
@@ -279,6 +287,104 @@ For argument NODE, see function `codemetrics-analyze' for more information."
          (setq sequence t))
        (list (if sequence 1 0) nil)))
     (`cyclomatic '(1 nil))))
+
+;;
+;; (@* "Debug Mode" )
+;;
+
+(defun codemetrics-debug--enable ()
+  "Start `codemetrics-debug-mode'."
+  )
+
+(defun codemetrics-debug--disable ()
+  "End `codemetrics-debug-mode'."
+  )
+
+;;;###autoload
+(define-minor-mode codemetrics-debug-mode
+  "Turn on/off debug mode for `codemetrics'."
+  :group 'codemetrics
+  :init-value nil
+  :lighter "CodeMetrics Debug"
+  ;;(if codemetrics-debug-mode (codemetrics-debug--enable) (codemetrics-debug--disable))
+  (codemetrics--after-change))
+
+;;
+;; (@* "Display" )
+;;
+
+(defcustom codemetrics-display 'method
+  "Choose the scope you want it to display."
+  :type '(choice (const :tag "method" method)
+                 (const :tag "class" class))
+  :group 'codemetrics)
+
+(defcustom codemetrics-delay 0.0
+  "Delay time to display results in seconds."
+  :type 'float
+  :group 'codemetrics)
+
+(defvar-local codemetrics--display-timer nil
+  "Timer to render the result.")
+
+(defvar-local codemetrics--ovs nil
+  "List of overlays.")
+
+(defun codemetrics--display-nodes (&optional scope)
+  "Return a list of node types depends on the display scope variable
+`codemetrics-display'."
+  (setq scope (or scope codemetrics-display))
+  (cl-case scope
+    (`method '(method_declaration function_definition))
+    (`class   (append '(class_declaration)
+                      (codemetrics--display-nodes 'class)))
+    (t (user-error "Unknow display scope"))))
+
+(defun codemetrics--display-this-node-p (scope node)
+  "Return non-nil when the NODE is inside the display SCOPE."
+  (or codemetrics-debug-mode                ; scope is `all'
+      (memq (tsc-node-type node) scope)))
+
+(defun codemetrics--display-start (buffer)
+  "Display result in BUFFER."
+  (codemetrics--with-current-buffer buffer  ; make sure buffer still exists
+    (let* ((result (codemetrics-buffer))
+           (score (car result))             ; total score
+           (data (cdr result))              ; list of `node' and `score'
+           (scope (codemetrics--display-nodes)))
+      (dolist (it data)
+        (let ((node (nth 0 it))
+              (node-score (nth 1 it))
+              (depth (nth 2 it)))
+          (when (codemetrics--display-this-node-p scope node)
+            (jcs-print (tsc-node-start-position node))
+            )
+          ))
+      )))
+
+(defun codemetrics--after-change (&rest _)
+  "Register to `after-change-functions' variable."
+  (when (timerp codemetrics--display-timer)
+    (cancel-timer codemetrics--display-timer))
+  (setq codemetrics--display-timer
+        (run-with-idle-timer codemetrics-delay nil
+                             #'codemetrics--display-start (current-buffer))))
+
+(defun codemetrics--enable ()
+  "Start `codemetrics-mode'."
+  (add-hook 'after-change-functions #'codemetrics--after-change nil t))
+
+(defun codemetrics--disable ()
+  "End `codemetrics-mode'."
+  (remove-hook 'after-change-functions #'codemetrics--after-change t))
+
+;;;###autoload
+(define-minor-mode codemetrics-mode
+  "Display codemetrics result in current buffer."
+  :group 'codemetrics
+  :init-value nil
+  :lighter "CodeMetrics"
+  (if codemetrics-mode (codemetrics--enable) (codemetrics--disable)))
 
 (provide 'codemetrics)
 ;;; codemetrics.el ends here
