@@ -33,6 +33,7 @@
 
 (require 'cl-lib)
 (require 'pcase)
+(require 'rect)
 
 (require 's)
 (require 'tree-sitter)
@@ -168,6 +169,29 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
        (cl-decf depth))
      node)))
 
+(defun codemetrics--accumulate (report)
+  "Accumulate the score and add the information to the REPORT."
+  (let ((score (car report))
+        (data (cdr report))
+        (new-data))
+    (while data
+      (let* ((current (pop data))
+             (current-depth (nth 1 current))
+             (accumulate-score 0)
+             (break)
+             (index 0))
+        (while (and (not break)
+                    (< index (length data)))
+          (let* ((it         (nth index data))
+                 (depth      (nth 1 it))
+                 (node-score (nth 2 it)))
+            (if (< current-depth depth)
+                (cl-incf accumulate-score node-score)
+              (setq break t)))
+          (cl-incf index))
+        (push (append current `(,accumulate-score)) new-data)))
+    (cons score (reverse new-data))))
+
 ;;;###autoload
 (defun codemetrics-analyze (content &optional mode)
   "Analyze CONTENT in major (MODE), the code."
@@ -207,7 +231,7 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
                                  depth nested-level nested)
                (let ((node-score (+ weight nested)))
                  (codemetrics--log "%s" (cons type node-score))
-                 (push (list node node-score depth) data)
+                 (push (list node depth node-score) data)
                  ;; The first value is plus, second is times.
                  (cl-incf score node-score)))))
          tree-sitter-tree))
@@ -292,22 +316,14 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 ;; (@* "Debug Mode" )
 ;;
 
-(defun codemetrics-debug--enable ()
-  "Start `codemetrics-debug-mode'."
-  )
-
-(defun codemetrics-debug--disable ()
-  "End `codemetrics-debug-mode'."
-  )
-
 ;;;###autoload
 (define-minor-mode codemetrics-debug-mode
   "Turn on/off debug mode for `codemetrics'."
   :group 'codemetrics
   :init-value nil
   :lighter "CodeMetrics Debug"
-  ;;(if codemetrics-debug-mode (codemetrics-debug--enable) (codemetrics-debug--disable))
-  (codemetrics--after-change))
+  (codemetrics--ensure-ts
+    (codemetrics--after-change)))
 
 ;;
 ;; (@* "Display" )
@@ -319,7 +335,7 @@ For argument NODE, see function `codemetrics-analyze' for more information."
                  (const :tag "class" class))
   :group 'codemetrics)
 
-(defcustom codemetrics-delay 0.0
+(defcustom codemetrics-delay 0.8
   "Delay time to display results in seconds."
   :type 'float
   :group 'codemetrics)
@@ -329,6 +345,37 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 
 (defvar-local codemetrics--ovs nil
   "List of overlays.")
+
+(defcustom codemetrics-priority 100
+  "Overlays' priority."
+  :type 'integer
+  :group 'codemetrics)
+
+(defcustom codemetrics-symbols
+  `((0   . "simple enough (%s%%)")
+    (75  . "mildly complex (%s%%)")
+    (100 . "very complex (%s%%)"))
+  "Alist of symbol messages, consist of (score . format-message)."
+  :type 'list
+  :group 'codemetrics)
+
+(defface codemetrics-face
+  '((t :height 0.7 :foreground "#999999"))
+  "Face added to codemetrics display."
+  :type 'face
+  :group 'codemetrics)
+
+(defun codemetrics--complexity-symbol (percent)
+  "Return format message by PERCENT."
+  (if codemetrics-debug-mode ""
+    (let ((str))
+      (cl-some (lambda (pair)
+                 (let ((percentage (car pair))
+                       (msg        (cdr pair)))
+                   (when (<= percentage percent)
+                     (setq str msg))))
+               (reverse codemetrics-symbols))
+      str)))
 
 (defun codemetrics--display-nodes (&optional scope)
   "Return a list of node types depends on the display scope variable
@@ -345,22 +392,55 @@ For argument NODE, see function `codemetrics-analyze' for more information."
   (or codemetrics-debug-mode                ; scope is `all'
       (memq (tsc-node-type node) scope)))
 
+(defun codemetrics--make-ov (pos)
+  "Create an overlay."
+  (save-excursion
+    (goto-char pos)
+    (let* ((ov (make-overlay (line-beginning-position)
+                             (line-beginning-position))))
+      (overlay-put ov 'codemetrics t)
+      (push ov codemetrics--ovs)
+      ov)))
+
+(defun codemetrics--delete-ovs ()
+  "Clean up all overlays."
+  (mapc #'delete-overlay codemetrics--ovs))
+
 (defun codemetrics--display-start (buffer)
   "Display result in BUFFER."
   (codemetrics--with-current-buffer buffer  ; make sure buffer still exists
-    (let* ((result (codemetrics-buffer))
-           (score (car result))             ; total score
-           (data (cdr result))              ; list of `node' and `score'
+    (codemetrics--delete-ovs)               ; clean up before re-rendering
+    (let* ((report (codemetrics-buffer))
+           (report (if codemetrics-debug-mode
+                       report
+                     (codemetrics--accumulate report)))
+           (data (cdr report))              ; list of `node' and `score'
            (scope (codemetrics--display-nodes)))
       (dolist (it data)
-        (let ((node (nth 0 it))
-              (node-score (nth 1 it))
-              (depth (nth 2 it)))
+        (let ((node             (nth 0 it))
+              (depth            (nth 1 it))
+              (node-score       (nth 2 it))
+              (accumulate-score (nth 3 it)))
           (when (codemetrics--display-this-node-p scope node)
-            (jcs-print (tsc-node-start-position node))
-            )
-          ))
-      )))
+            (let* ((pos (tsc-node-start-position node))
+                   (column (save-excursion (goto-char pos) (current-column)))
+                   (ov (codemetrics--make-ov pos))
+                   (score-or-percent (if codemetrics-debug-mode
+                                         node-score
+                                       (codemetrics-percentage accumulate-score)))
+                   (str (if codemetrics-debug-mode
+                            (format "+%s" score-or-percent)
+                          (format (codemetrics--complexity-symbol score-or-percent)
+                                  score-or-percent))))
+              (add-face-text-property 0 (length str) 'codemetrics-face nil str)
+              (setq str (concat (spaces-string column) str "\n"))
+              ;;(overlay-put ov 'before-string "\n")
+              ;;(overlay-put ov 'display str)
+              (overlay-put ov 'after-string str)
+              ;;(overlay-put ov 'after-string "\n")
+              ;;(overlay-put ov 'face 'codemetrics-face)
+              (overlay-put ov 'invisible t)
+              (overlay-put ov 'priority codemetrics-priority))))))))
 
 (defun codemetrics--after-change (&rest _)
   "Register to `after-change-functions' variable."
@@ -372,11 +452,13 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 
 (defun codemetrics--enable ()
   "Start `codemetrics-mode'."
-  (add-hook 'after-change-functions #'codemetrics--after-change nil t))
+  (add-hook 'after-change-functions #'codemetrics--after-change nil t)
+  (codemetrics--after-change))
 
 (defun codemetrics--disable ()
   "End `codemetrics-mode'."
-  (remove-hook 'after-change-functions #'codemetrics--after-change t))
+  (remove-hook 'after-change-functions #'codemetrics--after-change t)
+  (codemetrics--delete-ovs))
 
 ;;;###autoload
 (define-minor-mode codemetrics-mode
@@ -384,7 +466,8 @@ For argument NODE, see function `codemetrics-analyze' for more information."
   :group 'codemetrics
   :init-value nil
   :lighter "CodeMetrics"
-  (if codemetrics-mode (codemetrics--enable) (codemetrics--disable)))
+  (codemetrics--ensure-ts
+    (if codemetrics-mode (codemetrics--enable) (codemetrics--disable))))
 
 (provide 'codemetrics)
 ;;; codemetrics.el ends here
