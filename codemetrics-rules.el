@@ -35,6 +35,7 @@
 (declare-function codemetrics-rules-java-method-declaration "codemetrics.el")
 (declare-function codemetrics-rules-java-outer-loop "codemetrics.el")
 (declare-function codemetrics-rules-java-logical-operators "codemetrics.el")
+(declare-function codemetrics-rules-lua-binary-expressions "codemetrics.el")
 
 ;;
 ;; (@* "Rules" )
@@ -100,7 +101,14 @@
 
 (defun codemetrics-rules-lua ()
   "Return rules for Lua."
-  `())
+  `((function_declaration . codemetrics-rules-java-method-declaration)
+    (if_statement         . (1 t))
+    (while_statement      . (1 t))
+    (for_statement        . (1 t))
+    (repeat_statement     . (1 t))
+    (binary_expression    . codemetrics-rules-lua-binary-expressions)
+    (goto_statement       . (1 t))
+    (function_call        . codemetrics-rules-recursion)))
 
 (provide 'codemetrics-rules)
 ;;; codemetrics-rules.el ends here

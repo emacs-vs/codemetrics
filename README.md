@@ -48,6 +48,7 @@ These languages are fairly complete:
 
 - C / C++ / C#
 - Java
+- Lua
 
 These languages are in development:
 
@@ -56,7 +57,6 @@ These languages are in development:
 - Emacs Lisp
 - Go
 - JavaScript / JSX / Julia
-- Lua
 - OCaml
 - PHP / Python
 - Ruby / Rust

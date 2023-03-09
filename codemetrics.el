@@ -133,11 +133,25 @@ For arguments STR, START, and END, see function `s-count-matches' for details."
       (push (tsc-get-nth-child node index) children))
     (reverse children)))
 
+(defun codemetrics--get-children-traverse (node)
+  "Return children from NODE but traverse it."
+  (let (nodes)
+    (tsc-traverse-mapc (lambda (child) (push child nodes)) node)
+    (reverse nodes)))
+
 (defun codemetrics--tsc-find-children (node type)
   "Search through the children of NODE to find all with type equal to TYPE;
 then return that list."
   (cl-remove-if-not (lambda (child) (codemetrics--tsc-compare-type child type))
                     (codemetrics--get-children node)))
+
+(defun codemetrics--tsc-find-children-traverse (node type)
+  "Like function `codemetrics--tsc-find-children' but traverse it.
+
+For arguments NODE and TYPE, see function `codemetrics--tsc-find-children' for
+more information."
+  (cl-remove-if-not (lambda (child) (codemetrics--tsc-compare-type child type))
+                    (codemetrics--get-children-traverse node)))
 
 ;;
 ;; (@* "Core" )
@@ -312,6 +326,20 @@ For argument NODE, see function `codemetrics-analyze' for more information."
        (list (if sequence 1 0) nil)))
     (`cyclomatic '(1 nil))))
 
+(defun codemetrics-rules-lua-binary-expressions (node &rest _)
+  "Define weight for Lua binary expressions.
+
+For argument NODE, see function `codemetrics-analyze' for more information."
+  (cl-case codemetrics-complexity
+    (`cognitive
+     (let ((parent (tsc-get-parent node))
+           (matches (codemetrics--tsc-find-children-traverse node "binary_expression"))
+           (sequence nil))
+       (when (<= 2 (length matches))
+         (setq sequence t))
+       (list (if sequence 1 0) nil)))
+    (`cyclomatic '(1 nil))))
+
 ;;
 ;; (@* "Debug Mode" )
 ;;
@@ -382,7 +410,8 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 `codemetrics-display'."
   (setq scope (or scope codemetrics-display))
   (cl-case scope
-    (`method '(method_declaration function_definition))
+    (`method '(method_declaration
+               function_definition function_declaration))
     (`class   (append '(class_declaration)
                       (codemetrics--display-nodes 'class)))
     (t (user-error "Unknow display scope"))))
