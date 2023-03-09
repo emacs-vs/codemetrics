@@ -434,7 +434,7 @@ For argument NODE, see function `codemetrics-analyze' for more information."
                function_definition function_declaration))
     (`class   (append '(class_declaration)
                       (codemetrics--display-nodes 'class)))
-    (t (user-error "Unknow display scope"))))
+    (t (user-error "Unknown display scope: %s" scope))))
 
 (defun codemetrics--display-this-node-p (scope node)
   "Return non-nil when the NODE is inside the display SCOPE."
@@ -467,6 +467,7 @@ For argument NODE, see function `codemetrics-analyze' for more information."
            (scope (codemetrics--display-nodes)))
       (dolist (it data)
         (let ((node             (nth 0 it))
+              (depth            (nth 1 it))
               (node-score       (nth 2 it))
               (accumulate-score (nth 3 it)))
           (when (codemetrics--display-this-node-p scope node)
@@ -477,9 +478,11 @@ For argument NODE, see function `codemetrics-analyze' for more information."
                                          node-score
                                        (codemetrics-percentage accumulate-score)))
                    (str (if codemetrics-debug-mode
-                            (format "+%s" score-or-percent)
+                            (format "%s, +%s" depth score-or-percent)
                           (format (codemetrics--complexity-symbol score-or-percent)
                                   score-or-percent))))
+              (when codemetrics-debug-mode
+                (add-face-text-property 0 (length str) 'codemetrics-default nil str))
               (setq str (concat (spaces-string column) str "\n"))
               ;;(overlay-put ov 'before-string "\n")
               ;;(overlay-put ov 'display str)
