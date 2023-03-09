@@ -332,8 +332,7 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 For argument NODE, see function `codemetrics-analyze' for more information."
   (cl-case codemetrics-complexity
     (`cognitive
-     (let ((parent (tsc-get-parent node))
-           (matches (codemetrics--tsc-find-children-traverse node "binary_expression"))
+     (let ((matches (codemetrics--tsc-find-children-traverse node "binary_expression"))
            (sequence nil))
        (when (<= 2 (length matches))
          (setq sequence t))
