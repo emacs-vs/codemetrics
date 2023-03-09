@@ -282,8 +282,8 @@ For argument DEPTH, see function `codemetrics-analyze' for more information."
 For arguments NODE, DEPTH, and NESTED, see function `codemetrics-analyze' for
 more information."
   ;; XXX: Record the recursion method name (identifier)
-  (setq codemetrics--recursion-identifier
-        (tsc-node-text (car (codemetrics--tsc-find-children node "identifier"))))
+  (when-let ((node (car (codemetrics--tsc-find-children node "identifier"))))
+    (setq codemetrics--recursion-identifier (tsc-node-text node)))
   (cl-case codemetrics-complexity
     ;; These magic numbers are observed by TreeSitter AST.
     (`cognitive (if (or (<= 5 depth) (<= 3 nested))
@@ -418,7 +418,6 @@ For argument NODE, see function `codemetrics-analyze' for more information."
            (scope (codemetrics--display-nodes)))
       (dolist (it data)
         (let ((node             (nth 0 it))
-              (depth            (nth 1 it))
               (node-score       (nth 2 it))
               (accumulate-score (nth 3 it)))
           (when (codemetrics--display-this-node-p scope node)

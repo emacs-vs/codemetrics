@@ -23,6 +23,14 @@ which was proposed by G. Ann Campbell in
 
 ## 🖥 Usage
 
+The simplest way to start using this package:
+
+```elisp
+(codemetrics-mode 1)
+```
+
+### 📚 Use it as a library
+
 These are functions you can use to analyze:
 
 | Functions             | Description                        |
@@ -31,7 +39,7 @@ These are functions you can use to analyze:
 | `codemetrics-region`  | Analyze region                     |
 | `codemetrics-buffer`  | Analyze the whole buffer           |
 
-All these functions returns a score indicates the complexity.
+All these functions return a score data indicate the complexity.
 
 ## 🔨 Supported languages
 > ⚠️ Please sort these two lists alphabetically!

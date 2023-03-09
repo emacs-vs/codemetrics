@@ -3,7 +3,7 @@
          "Plugin shows complexity information")
 
 (website-url "https://github.com/jcs-elpa/codemetrics")
-(keywords "complexity")
+(keywords "convenience" "complexity")
 
 (package-file "codemetrics.el")
 
