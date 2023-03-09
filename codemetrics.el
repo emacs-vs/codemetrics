@@ -379,18 +379,39 @@ For argument NODE, see function `codemetrics-analyze' for more information."
   :type 'integer
   :group 'codemetrics)
 
-(defcustom codemetrics-symbols
-  `((0   . "simple enough (%s%%)")
-    (75  . "mildly complex (%s%%)")
-    (100 . "very complex (%s%%)"))
-  "Alist of symbol messages, consist of (score . format-message)."
-  :type 'list
-  :group 'codemetrics)
-
-(defface codemetrics-face
+(defface codemetrics-default
   '((t :height 0.7 :foreground "#999999"))
   "Face added to codemetrics display."
   :type 'face
+  :group 'codemetrics)
+
+(defface codemetrics-average
+  '((t :height 0.7 :foreground "#62b543"))
+  "Face to apply when compelxity is average."
+  :type 'face
+  :group 'codemetrics)
+
+(defface codemetrics-high
+  '((t :height 0.7 :foreground "#F4AF3D"))
+  "Face to apply when compelxity is high."
+  :type 'face
+  :group 'codemetrics)
+
+(defface codemetrics-extreme
+  '((t :height 0.7 :foreground "#E05555"))
+  "Face to apply when compelxity is extreme."
+  :type 'face
+  :group 'codemetrics)
+
+(defcustom codemetrics-symbols
+  `((0   . ,(concat (propertize "❖ " 'face 'codemetrics-average)
+                    (propertize "simple enough (%s%%)" 'face 'codemetrics-default)))
+    (75  . ,(concat (propertize "❖ " 'face 'codemetrics-high)
+                    (propertize "mildly complex (%s%%)" 'face 'codemetrics-default)))
+    (100 . ,(concat (propertize "❖ " 'face 'codemetrics-extreme)
+                    (propertize "very complex (%s%%)" 'face 'codemetrics-default))))
+  "Alist of symbol messages, consist of (score . format-message)."
+  :type 'list
   :group 'codemetrics)
 
 (defun codemetrics--complexity-symbol (percent)
@@ -460,13 +481,12 @@ For argument NODE, see function `codemetrics-analyze' for more information."
                             (format "+%s" score-or-percent)
                           (format (codemetrics--complexity-symbol score-or-percent)
                                   score-or-percent))))
-              (add-face-text-property 0 (length str) 'codemetrics-face nil str)
               (setq str (concat (spaces-string column) str "\n"))
               ;;(overlay-put ov 'before-string "\n")
               ;;(overlay-put ov 'display str)
               (overlay-put ov 'after-string str)
               ;;(overlay-put ov 'after-string "\n")
-              ;;(overlay-put ov 'face 'codemetrics-face)
+              ;;(overlay-put ov 'face 'codemetrics-default)
               (overlay-put ov 'invisible t)
               (overlay-put ov 'priority codemetrics-priority))))))))
 
