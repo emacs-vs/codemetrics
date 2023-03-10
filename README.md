@@ -7,6 +7,8 @@
 
 [![CI](https://github.com/jcs-elpa/codemetrics/actions/workflows/test.yml/badge.svg)](https://github.com/jcs-elpa/codemetrics/actions/workflows/test.yml)
 
+<img src="./etc/demo.gif" />
+
 This plugin implements live calculation of the **Cognitive Complexity** metric,
 which was proposed by G. Ann Campbell in
 [Cognitive Complexity - A new way of measuring understandability](https://www.sonarsource.com/docs/CognitiveComplexity.pdf)
