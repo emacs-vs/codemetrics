@@ -124,8 +124,8 @@
     (finally_clause     . (1 t))
     ("&&"               . codemetrics-rules--logical-operators)
     ("||"               . codemetrics-rules--logical-operators)
-    (continue_statement . codemetrics-rules--java-outer-loop)
     (break_statement    . codemetrics-rules--java-outer-loop)
+    (continue_statement . codemetrics-rules--java-outer-loop)
     (method_invocation  . codemetrics-rules--recursion)))
 
 (defun codemetrics-rules-javascript ()
@@ -170,7 +170,21 @@
 
 (defun codemetrics-rules-php ()
   "Return rules for PHP."
-  `())
+  `((class_declaration        . codemetrics-rules--method-declaration)
+    (function_definition      . codemetrics-rules--method-declaration)
+    (if_statement             . (1 t))
+    (switch_statement         . (1 t))
+    (while_statement          . (1 t))
+    (for_statement            . (1 t))
+    (do_statement             . (1 t))
+    (catch_clause             . (1 t))
+    (finally_clause           . (1 t))
+    ("&&"                     . codemetrics-rules--logical-operators)
+    ("||"                     . codemetrics-rules--logical-operators)
+    (break_statement          . codemetrics-rules--java-outer-loop)
+    (continue_statement       . codemetrics-rules--java-outer-loop)
+    (goto_statement           . (1 nil))
+    (function_call_expression . codemetrics-rules--recursion)))
 
 (defun codemetrics-rules-python ()
   "Return rules for Python."

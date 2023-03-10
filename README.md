@@ -51,6 +51,7 @@ These languages are fairly complete:
 - Go
 - Java / JavaScript / JSX / Julia
 - Lua
+- PHP / Python
 - Ruby / Rust
 - TypeScript / TSX
 
@@ -61,7 +62,6 @@ These languages are in development:
 - Elixir
 - Emacs Lisp
 - OCaml
-- PHP / Python
 - Scala / Swift
 
 ## 🔗 References
