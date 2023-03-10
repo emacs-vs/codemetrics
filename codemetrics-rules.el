@@ -165,7 +165,7 @@
     (for_statement        . (1 t))
     (repeat_statement     . (1 t))
     (binary_expression    . codemetrics-rules--lua-binary-expressions)
-    (goto_statement       . (1 t))
+    (goto_statement       . (1 nil))
     (function_call        . codemetrics-rules--recursion)))
 
 (defun codemetrics-rules-php ()
@@ -174,19 +174,31 @@
 
 (defun codemetrics-rules-python ()
   "Return rules for Python."
-  `())
+  `((class_definition    . codemetrics-rules--class-declaration)
+    (function_definition . codemetrics-rules--method-declaration)
+    (lambda              . (0 t))
+    (if_statement        . (1 t))
+    (while_statement     . (1 t))
+    (for_statement       . (1 t))
+    (boolean_operator    . codemetrics-rules--logical-operators)
+    (raise_statement     . (lambda (&rest _)
+                             (codemetrics-with-complexity
+                               '(1 nil)
+                               '(0 nil))))
+    (call                . codemetrics-rules--recursion)))
 
 (defun codemetrics-rules-ruby ()
   "Return rules for Ruby."
   `((class    . codemetrics-rules--class-declaration)
     (method   . codemetrics-rules--method-declaration)
+    (lambda   . (0 t))  ; don't score, but increase nested level
     (if       . (1 t))
     (while    . (1 t))
     (for      . (1 t))
     (do_block . (1 t))
     (until    . (1 t))
     (binary   . codemetrics-rules--ruby-binary)
-    (throw    . (1 t))
+    (throw    . (1 nil))
     (call     . codemetrics-rules--recursion)))
 
 (defun codemetrics-rules-rust ()

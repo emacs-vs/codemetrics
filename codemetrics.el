@@ -173,6 +173,14 @@ more information."
 ;; (@* "Core" )
 ;;
 
+(defmacro codemetrics-with-complexity (cond1 cond2)
+  ""
+  (declare (indent 0))
+  `(cl-case codemetrics-complexity
+     (cognitive  ,cond1)
+     (cyclomatic ,cond2)
+     (t (user-error "Unknown complexity %s" codemetrics-complexity))))
+
 (defun codemetrics-percentage (score)
   "Calculate percentage from SCORE."
   (floor (* (/ score codemetrics-percent-score) 100.0)))
@@ -247,7 +255,7 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
            (when-let* ((type (tsc-node-type node))
                        (a-rule (assoc type rules))  ; cons
                        (rule (cdr a-rule)))
-             (let* ((rules-data (if (symbolp rule)
+             (let* ((rules-data (if (functionp rule)
                                     (funcall rule node depth nested)
                                   rule))
                     (weight     (nth 0 rules-data))
@@ -287,12 +295,11 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
   "Define rule for `class' declaration.
 
 For argument DEPTH, see function `codemetrics-analyze' for more information."
-  (cl-case codemetrics-complexity
-    (`cognitive
-     (if (< 1 depth)  ; if class inside class,
-         '(1 nil)     ; we score 1, but don't increase nested level
-       '(0 nil)))
-    (`cyclomatic '(1 nil))))
+  (codemetrics-with-complexity
+    (if (< 1 depth)  ; if class inside class,
+        '(1 nil)     ; we score 1, but don't increase nested level
+      '(0 nil))
+    '(1 nil)))
 
 (defun codemetrics-rules--method-declaration (node depth nested)
   "Define rule for `method' declaration.
@@ -302,63 +309,60 @@ more information."
   ;; XXX: Record the recursion method name (identifier)
   (when-let ((node (car (codemetrics--tsc-find-children node "identifier"))))
     (setq codemetrics--recursion-identifier (tsc-node-text node)))
-  (cl-case codemetrics-complexity
+  (codemetrics-with-complexity
     ;; These magic numbers are observed by TreeSitter AST.
-    (`cognitive (if (or (<= 5 depth) (<= 3 nested))
-                    '(1 nil)
-                  '(0 nil)))
-    (`cyclomatic '(1 nil))))
+    (if (or (<= 5 depth) (<= 3 nested))
+        '(1 nil)
+      '(0 nil))
+    '(1 nil)))
 
 (defun codemetrics-rules--logical-operators (node &rest _)
   "Define rule for logical operators.
 
 For argument NODE, see function `codemetrics-analyze' for more information."
-  (cl-case codemetrics-complexity
-    (`cognitive
-     (let ((parent (tsc-get-parent node))
-           (sequence nil))
-       (when (<= 2 (codemetrics--s-count-matches '("||" "&&") (tsc-node-text parent)))
-         (setq sequence t))
-       (list (if sequence 1 0) nil)))
-    (`cyclomatic '(1 nil))))
+  (codemetrics-with-complexity
+    (let ((parent (tsc-get-parent node))
+          (sequence nil))
+      (when (<= 2 (codemetrics--s-count-matches '("||" "&&") (tsc-node-text parent)))
+        (setq sequence t))
+      (list (if sequence 1 0) nil))
+    '(1 nil)))
 
 (defun codemetrics-rules--outer-loop (node _depth _nested &optional children)
   "Define rule for outer loop (jump), `break' and `continue' statements.
 
 For argument NODE, see function `codemetrics-analyze' for more information."
-  (cl-case codemetrics-complexity
-    (`cognitive (list (if (<= (tsc-count-children node) children) 0 1) nil))
-    (`cyclomatic '(0 nil))))
+  (codemetrics-with-complexity
+    (list (if (<= (tsc-count-children node) children) 0 1) nil)
+    '(0 nil)))
 
 (defun codemetrics-rules--recursion (node &rest _)
   "Handle recursion for most languages uses `identifier' as the keyword."
-  (cl-case codemetrics-complexity
-    (`cognitive
-     (if-let* ((identifier (car (codemetrics--tsc-find-children node "identifier")))
-               (text (tsc-node-text identifier))
-               ((equal text codemetrics--recursion-identifier)))
-         '(1 nil)
-       '(0 nil)))
+  (codemetrics-with-complexity
+    (if-let* ((identifier (car (codemetrics--tsc-find-children node "identifier")))
+              (text (tsc-node-text identifier))
+              ((equal text codemetrics--recursion-identifier)))
+        '(1 nil)
+      '(0 nil))
     ;; do nothing
-    (`cyclomatic '(0 nil))))
+    '(0 nil)))
 
 (defun codemetrics-rules--elixir-call (node depth nested)
   "Define rule for Elixir `call' declaration.
 
 For argument NODE, DEPTH, and NESTED, see function `codemetrics-analyze' for
 more information."
-  (cl-case codemetrics-complexity
-    (`cognitive
-     (let* ((text (tsc-node-text node))
-            (def (string-prefix-p "def " text))
-            (defmodule (string-prefix-p "defmodule " text)))
-       (cond (def
-              (codemetrics-rules--method-declaration node depth nested))
-             (defmodule
-              (codemetrics-rules--class-declaration node depth nested))
-             (t
-              (codemetrics-rules--recursion node depth nested)))))
-    (`cyclomatic '(1 nil))))
+  (codemetrics-with-complexity
+    (let* ((text (tsc-node-text node))
+           (def (string-prefix-p "def " text))
+           (defmodule (string-prefix-p "defmodule " text)))
+      (cond (def
+             (codemetrics-rules--method-declaration node depth nested))
+            (defmodule
+             (codemetrics-rules--class-declaration node depth nested))
+            (t
+             (codemetrics-rules--recursion node depth nested))))
+    '(1 nil)))
 
 (defun codemetrics-rules--java-outer-loop (node &rest _)
   "Define rule for Java outer loop (jump), `break' and `continue' statements.
@@ -370,40 +374,37 @@ For argument NODE, see function `codemetrics-analyze' for more information."
   "Define rule for Julia `macro' expression.
 
 For argument NODE, see function `codemetrics-analyze' for more information."
-  (cl-case codemetrics-complexity
-    (`cognitive
-     (if-let* ((identifier (car (codemetrics--tsc-find-children-traverse node "identifier")))
-               (text (tsc-node-text identifier))
-               ((string= text "goto")))
-         '(1 nil)
-       '(0 nil)))
-    (`cyclomatic '(0 nil))))
+  (codemetrics-with-complexity
+    (if-let* ((identifier (car (codemetrics--tsc-find-children-traverse node "identifier")))
+              (text (tsc-node-text identifier))
+              ((string= text "goto")))
+        '(1 nil)
+      '(0 nil))
+    '(0 nil)))
 
 (defun codemetrics-rules--lua-binary-expressions (node &rest _)
   "Define rule for Lua binary expressions.
 
 For argument NODE, see function `codemetrics-analyze' for more information."
-  (cl-case codemetrics-complexity
-    (`cognitive
-     (let ((matches (codemetrics--tsc-find-children-traverse node "binary_expression"))
-           (sequence nil))
-       (when (<= 2 (length matches))
-         (setq sequence t))
-       (list (if sequence 1 0) nil)))
-    (`cyclomatic '(1 nil))))
+  (codemetrics-with-complexity
+    (let ((matches (codemetrics--tsc-find-children-traverse node "binary_expression"))
+          (sequence nil))
+      (when (<= 2 (length matches))
+        (setq sequence t))
+      (list (if sequence 1 0) nil))
+    '(1 nil)))
 
 (defun codemetrics-rules--ruby-binary (node &rest _)
   "Define rule for Ruby binary.
 
 For argument NODE, see function `codemetrics-analyze' for more information."
-  (cl-case codemetrics-complexity
-    (`cognitive
-     (let ((text (tsc-node-text node))
-           (sequence nil))
-       (when (<= 2 (codemetrics--s-count-matches '("||" "&&") text))
-         (setq sequence t))
-       (list (if sequence 1 0) nil)))
-    (`cyclomatic '(1 nil))))
+  (codemetrics-with-complexity
+    (let ((text (tsc-node-text node))
+          (sequence nil))
+      (when (<= 2 (codemetrics--s-count-matches '("||" "&&") text))
+        (setq sequence t))
+      (list (if sequence 1 0) nil))
+    '(1 nil)))
 
 (defun codemetrics-rules--rust-outer-loop (node &rest _)
   "Define rule for Rust outer loop (jump), `break' and `continue' statements.
