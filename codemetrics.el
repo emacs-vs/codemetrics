@@ -397,25 +397,21 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 (defface codemetrics-default
   '((t :height 0.7 :foreground "#999999"))
   "Face added to codemetrics display."
-  :type 'face
   :group 'codemetrics)
 
 (defface codemetrics-average
   '((t :height 0.7 :foreground "#62b543"))
   "Face to apply when compelxity is average."
-  :type 'face
   :group 'codemetrics)
 
 (defface codemetrics-high
   '((t :height 0.7 :foreground "#F4AF3D"))
   "Face to apply when compelxity is high."
-  :type 'face
   :group 'codemetrics)
 
 (defface codemetrics-extreme
   '((t :height 0.7 :foreground "#E05555"))
   "Face to apply when compelxity is extreme."
-  :type 'face
   :group 'codemetrics)
 
 (defcustom codemetrics-symbols
