@@ -45,7 +45,11 @@
 
 (defun codemetrics-rules-bash ()
   "Return rules for Bash."
-  `())
+  `((function_definition . codemetrics-rules-java-method-declaration)
+    (if_statement        . (1 t))
+    (while_statement     . (1 t))
+    (for_statement       . (1 t))
+    (command             . codemetrics-rules-recursion)))
 
 (defun codemetrics-rules-c ()
   "Return rules for C."

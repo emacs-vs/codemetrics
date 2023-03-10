@@ -46,6 +46,7 @@ All these functions return a score data indicate the complexity.
 
 These languages are fairly complete:
 
+- Bash
 - C / C++ / C#
 - Go
 - Java
@@ -54,7 +55,6 @@ These languages are fairly complete:
 These languages are in development:
 
 - Agda
-- Bash
 - Elm
 - Elixir
 - Emacs Lisp
