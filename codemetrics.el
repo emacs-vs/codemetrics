@@ -283,20 +283,8 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
 ;; (@* "Languages" )
 ;;
 
-(defun codemetrics-rules-recursion (node &rest _)
-  "Handle recursion for most languages uses `identifier' as the keyword."
-  (cl-case codemetrics-complexity
-    (`cognitive
-     (if-let* ((identifier (car (codemetrics--tsc-find-children node "identifier")))
-               (text (tsc-node-text identifier))
-               ((equal text codemetrics--recursion-identifier)))
-         '(1 nil)
-       '(0 nil)))
-    ;; do nothing
-    (`cyclomatic '(0 nil))))
-
-(defun codemetrics-rules-java-class-declaration (_node depth _nested)
-  "Define rule for Java `class' declaration.
+(defun codemetrics-rules--class-declaration (_node depth _nested)
+  "Define rule for `class' declaration.
 
 For argument DEPTH, see function `codemetrics-analyze' for more information."
   (cl-case codemetrics-complexity
@@ -306,8 +294,8 @@ For argument DEPTH, see function `codemetrics-analyze' for more information."
        '(0 nil)))
     (`cyclomatic '(1 nil))))
 
-(defun codemetrics-rules-java-method-declaration (node depth nested)
-  "Define rule for Java `method' declaration.
+(defun codemetrics-rules--method-declaration (node depth nested)
+  "Define rule for `method' declaration.
 
 For arguments NODE, DEPTH, and NESTED, see function `codemetrics-analyze' for
 more information."
@@ -319,6 +307,37 @@ more information."
     (`cognitive (if (or (<= 5 depth) (<= 3 nested))
                     '(1 nil)
                   '(0 nil)))
+    (`cyclomatic '(1 nil))))
+
+(defun codemetrics-rules--recursion (node &rest _)
+  "Handle recursion for most languages uses `identifier' as the keyword."
+  (cl-case codemetrics-complexity
+    (`cognitive
+     (if-let* ((identifier (car (codemetrics--tsc-find-children node "identifier")))
+               (text (tsc-node-text identifier))
+               ((equal text codemetrics--recursion-identifier)))
+         '(1 nil)
+       '(0 nil)))
+    ;; do nothing
+    (`cyclomatic '(0 nil))))
+
+(defun codemetrics-rules-elixir-call (node depth nested)
+  "Define rule for Elixir `call' declaration.
+
+For argument NODE, DEPTH, and NESTED, see function `codemetrics-analyze' for
+more information."
+  (jcs-print )
+  (cl-case codemetrics-complexity
+    (`cognitive
+     (let* ((text (tsc-node-text node))
+            (def (string-prefix-p "def " text))
+            (defmodule (string-prefix-p "defmodule " text)))
+       (cond (def
+              (codemetrics-rules--method-declaration node depth nested))
+             (defmodule
+              (codemetrics-rules--class-declaration node depth nested))
+             (t
+              (codemetrics-rules--recursion node depth nested)))))
     (`cyclomatic '(1 nil))))
 
 (defun codemetrics-rules-java-outer-loop (node &rest _)
@@ -443,7 +462,8 @@ For argument NODE, see function `codemetrics-analyze' for more information."
   (setq scope (or scope codemetrics-display))
   (cl-case scope
     (`method '(method_declaration
-               function_definition function_declaration))
+               function_definition function_declaration
+               call))
     (`class   (append '(class_declaration)
                       (codemetrics--display-nodes 'class)))
     (t (user-error "Unknown display scope: %s" scope))))
