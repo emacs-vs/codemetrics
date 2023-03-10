@@ -78,6 +78,10 @@
     ("||"                  . codemetrics-rules-java-logical-operators)
     (invocation_expression . codemetrics-rules-recursion)))
 
+(defun codemetrics-rules-elixir ()
+  "Return rules for Elixir."
+  `())
+
 (defun codemetrics-rules-go ()
   "Return rules for Go."
   `((function_declaration        . codemetrics-rules-java-method-declaration)
@@ -107,6 +111,10 @@
     (break_statement    . codemetrics-rules-java-outer-loop)
     (method_invocation  . codemetrics-rules-recursion)))
 
+(defun codemetrics-rules-javascript ()
+  "Return rules for JavaScript."
+  `())
+
 (defun codemetrics-rules-lua ()
   "Return rules for Lua."
   `((function_declaration . codemetrics-rules-java-method-declaration)
@@ -117,6 +125,26 @@
     (binary_expression    . codemetrics-rules-lua-binary-expressions)
     (goto_statement       . (1 t))
     (function_call        . codemetrics-rules-recursion)))
+
+(defun codemetrics-rules-php ()
+  "Return rules for PHP."
+  `())
+
+(defun codemetrics-rules-python ()
+  "Return rules for Python."
+  `())
+
+(defun codemetrics-rules-ruby ()
+  "Return rules for Ruby."
+  `())
+
+(defun codemetrics-rules-rust ()
+  "Return rules for Rust."
+  `())
+
+(defun codemetrics-rules-typescript ()
+  "Return rules for TypeScript."
+  `())
 
 (provide 'codemetrics-rules)
 ;;; codemetrics-rules.el ends here

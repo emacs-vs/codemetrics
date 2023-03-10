@@ -53,12 +53,24 @@
   :group 'codemetrics)
 
 (defcustom codemetrics-rules
-  `((c-mode      . ,(codemetrics-rules-c))
-    (c++-mode    . ,(codemetrics-rules-c++))
-    (csharp-mode . ,(codemetrics-rules-csharp))
-    (go-mode     . ,(codemetrics-rules-go))
-    (java-mode   . ,(codemetrics-rules-java))
-    (lua-mode    . ,(codemetrics-rules-lua)))
+  `((c-mode          . ,(codemetrics-rules-c))
+    (c++-mode        . ,(codemetrics-rules-c++))
+    (csharp-mode     . ,(codemetrics-rules-csharp))
+    (elixir-mode     . ,(codemetrics-rules-elixir))
+    (go-mode         . ,(codemetrics-rules-go))
+    (java-mode       . ,(codemetrics-rules-java))
+    (javascript-mode . ,(codemetrics-rules-javascript))
+    (js-mode         . ,(codemetrics-rules-javascript))
+    (js2-mode        . ,(codemetrics-rules-javascript))
+    (js3-mode        . ,(codemetrics-rules-javascript))
+    (lua-mode        . ,(codemetrics-rules-lua))
+    (php-mode        . ,(codemetrics-rules-php))
+    (python-mode     . ,(codemetrics-rules-python))
+    (rjsx-mode       . ,(codemetrics-rules-javascript))
+    (ruby-mode       . ,(codemetrics-rules-ruby))
+    (rust-mode       . ,(codemetrics-rules-rust))
+    (rustic-mode     . ,(codemetrics-rules-rust))
+    (typescript-mode . ,(codemetrics-rules-typescript)))
   "An alist of (major-mode . (node-type . weight)).
 
 WEIGHT is used to determine the final score."
@@ -280,7 +292,7 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
     (`cyclomatic '(0 nil))))
 
 (defun codemetrics-rules-java-class-declaration (_node depth _nested)
-  "Define weight for Java `class' declaration.
+  "Define rule for Java `class' declaration.
 
 For argument DEPTH, see function `codemetrics-analyze' for more information."
   (cl-case codemetrics-complexity
@@ -291,7 +303,7 @@ For argument DEPTH, see function `codemetrics-analyze' for more information."
     (`cyclomatic '(1 nil))))
 
 (defun codemetrics-rules-java-method-declaration (node depth nested)
-  "Define weight for Java `method' declaration.
+  "Define rule for Java `method' declaration.
 
 For arguments NODE, DEPTH, and NESTED, see function `codemetrics-analyze' for
 more information."
@@ -306,7 +318,7 @@ more information."
     (`cyclomatic '(1 nil))))
 
 (defun codemetrics-rules-java-outer-loop (node &rest _)
-  "Define weight for Java outer loop (jump), `break' and `continue' statements.
+  "Define rule for Java outer loop (jump), `break' and `continue' statements.
 
 For argument NODE, see function `codemetrics-analyze' for more information."
   (cl-case codemetrics-complexity
@@ -314,7 +326,7 @@ For argument NODE, see function `codemetrics-analyze' for more information."
     (`cyclomatic '(0 nil))))
 
 (defun codemetrics-rules-java-logical-operators (node &rest _)
-  "Define weight for Java logical operators.
+  "Define rule for Java logical operators.
 
 For argument NODE, see function `codemetrics-analyze' for more information."
   (cl-case codemetrics-complexity
@@ -327,7 +339,7 @@ For argument NODE, see function `codemetrics-analyze' for more information."
     (`cyclomatic '(1 nil))))
 
 (defun codemetrics-rules-lua-binary-expressions (node &rest _)
-  "Define weight for Lua binary expressions.
+  "Define rule for Lua binary expressions.
 
 For argument NODE, see function `codemetrics-analyze' for more information."
   (cl-case codemetrics-complexity
