@@ -427,6 +427,16 @@ For argument NODE, see function `codemetrics-analyze' for more information."
            '(1 t))
           (t (codemetrics-rules--recursion node)))))
 
+(defun codemetrics-rules--scala-infix-expression (node &rest _)
+  "Define rule for Scala `infix' expression.
+
+For argument NODE, see function `codemetrics-analyze' for more information."
+  (let ((text (tsc-node-text node)))
+    (cond ((string-match-p "=>" text)
+           '(0 t))  ; don't score, but increase nested level
+          (t
+           '(0 nil)))))
+
 ;;
 ;; (@* "Debug Mode" )
 ;;

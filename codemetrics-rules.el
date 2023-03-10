@@ -195,6 +195,8 @@
     (if_statement        . (1 t))
     (while_statement     . (1 t))
     (for_statement       . (1 t))
+    (except_clause       . (1 t))
+    (finally_clause      . (1 t))
     (boolean_operator    . codemetrics-rules--logical-operators)
     (raise_statement     . (lambda (&rest _)
                              (codemetrics-with-complexity
@@ -232,16 +234,31 @@
 
 (defun codemetrics-rules-scala ()
   "Return rules for Scala."
-  `((class_definition    . codemetrics-rules--class-declaration)
-    (function_definition . codemetrics-rules--method-declaration)
-    (if_expression       . (1 t))
-    (match_expression    . (1 t))
-    (operator_identifier . codemetrics-rules--logical-operators)
-    (call_expression     . codemetrics-rules--scala-call-expression)))
+  `((class_definition     . codemetrics-rules--class-declaration)
+    (function_declaration . codemetrics-rules--method-declaration)
+    (function_definition  . codemetrics-rules--method-declaration)
+    ;; XXX: Scala lambda is very hard to parse, and it has a lot of nested
+    ;; level... not quite sure how to improve this!
+    (infix_expression     . codemetrics-rules--scala-infix-expression)
+    (if_expression        . (1 t))
+    (match_expression     . (1 t))  ; switch statement
+    (catch_clause         . (1 t))
+    (finally_clause       . (1 t))
+    (operator_identifier  . codemetrics-rules--logical-operators)
+    (call_expression      . codemetrics-rules--scala-call-expression)))
 
 (defun codemetrics-rules-swift ()
   "Return rules for Swift."
-  `())
+  `((class_declaration      . codemetrics-rules--class-declaration)
+    (function_declaration   . codemetrics-rules--method-declaration)
+    (if_statement           . (1 t))
+    (while_statement        . (1 t))
+    (for_statement          . (1 t))
+    (repeat_while_statement . (1 t))
+    (catch_clause           . (1 t))
+    ("&&"                   . codemetrics-rules--logical-operators)
+    ("||"                   . codemetrics-rules--logical-operators)
+    (tuple                  . codemetrics-rules--recursion)))
 
 (defun codemetrics-rules-typescript ()
   "Return rules for TypeScript."
