@@ -71,7 +71,8 @@
   "Return rules for C++."
   (append
    (codemetrics-rules-c)
-   `((class_declaration   . codemetrics-rules--class-declaration))))
+   `((class_declaration   . codemetrics-rules--class-declaration)
+     (catch_clause        . (1 t)))))
 
 (defun codemetrics-rules-csharp ()
   "Return rules for C#."
@@ -83,6 +84,7 @@
     (while_statement       . (1 t))
     (for_statement         . (1 t))
     (do_statement          . (1 t))
+    (catch_clause          . (1 t))
     ("&&"                  . codemetrics-rules--logical-operators)
     ("||"                  . codemetrics-rules--logical-operators)
     (invocation_expression . codemetrics-rules--recursion)))
@@ -114,6 +116,7 @@
     (for_statement      . (1 t))
     (do_statement       . (1 t))
     (catch_clause       . (1 t))
+    (finally_clause     . (1 t))
     ("&&"               . codemetrics-rules--logical-operators)
     ("||"               . codemetrics-rules--logical-operators)
     (continue_statement . codemetrics-rules-java-outer-loop)
@@ -131,13 +134,17 @@
     (for_statement        . (1 t))
     (do_statement         . (1 t))
     (catch_clause         . (1 t))
+    (finally_clause       . (1 t))
     ("&&"                 . codemetrics-rules--logical-operators)
     ("||"                 . codemetrics-rules--logical-operators)
     (call_expression      . codemetrics-rules--recursion)))
 
 (defun codemetrics-rules-julia ()
   "Return rules for Julia."
-  `())
+  `((function_definition . codemetrics-rules--method-declaration)
+    (if_statement        . (1 t))
+    (while_statement     . (1 t))
+    (for_statement       . (1 t))))
 
 (defun codemetrics-rules-lua ()
   "Return rules for Lua."
