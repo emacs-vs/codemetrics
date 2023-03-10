@@ -53,6 +53,7 @@ These languages are fairly complete:
 - Lua
 - PHP / Python
 - Ruby / Rust
+- Scala
 - TypeScript / TSX
 
 These languages are in development:
@@ -62,7 +63,7 @@ These languages are in development:
 - Elixir
 - Emacs Lisp
 - OCaml
-- Scala / Swift
+- Swift
 
 ## 🔗 References
 

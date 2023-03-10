@@ -414,6 +414,19 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 For argument NODE, see function `codemetrics-analyze' for more information."
   (codemetrics-rules--outer-loop node nil nil 1))
 
+(defun codemetrics-rules--scala-call-expression (node &rest _)
+  "Define rule for Scala `while', `for', `do', and function call.
+
+For argument NODE, see function `codemetrics-analyze' for more information."
+  (let ((text (tsc-node-text node)))
+    (cond ((string-match-p "^while[ (]" text)
+           '(1 t))
+          ((string-match-p "^for[ (]" text)
+           '(1 t))
+          ((string-match-p "^do[ {]" text)
+           '(1 t))
+          (t (codemetrics-rules--recursion node)))))
+
 ;;
 ;; (@* "Debug Mode" )
 ;;

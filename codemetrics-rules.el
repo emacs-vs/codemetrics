@@ -41,6 +41,7 @@
 (declare-function codemetrics-rules--lua-binary-expressions "codemetrics.el")
 (declare-function codemetrics-rules--ruby-binary "codemetrics.el")
 (declare-function codemetrics-rules--rust-outer-loop "codemetrics.el")
+(declare-function codemetrics-rules--scala-call-expression "codemetrics.el")
 
 ;;
 ;; (@* "Rules" )
@@ -235,7 +236,8 @@
     (function_definition . codemetrics-rules--method-declaration)
     (if_expression       . (1 t))
     (match_expression    . (1 t))
-    (call_expression     . codemetrics-rules--recursion)))
+    (operator_identifier . codemetrics-rules--logical-operators)
+    (call_expression     . codemetrics-rules--scala-call-expression)))
 
 (defun codemetrics-rules-swift ()
   "Return rules for Swift."
