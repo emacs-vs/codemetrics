@@ -174,7 +174,9 @@ more information."
 ;;
 
 (defmacro codemetrics-with-complexity (cond1 cond2)
-  ""
+  "Execute conditions by variable `codemetrics-complexity'.
+
+All arguments COND1 and COND2 are followed by variable `codemetrics-complexity'."
   (declare (indent 0))
   `(cl-case codemetrics-complexity
      (cognitive  ,cond1)
