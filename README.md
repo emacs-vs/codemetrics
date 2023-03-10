@@ -64,7 +64,6 @@ These languages are in development:
 - Ruby / Rust
 - Scala / Swift
 - TypeScript / TSX
-- XML (upstream)
 
 ## 🔗 References
 

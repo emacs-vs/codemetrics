@@ -119,6 +119,10 @@
   "Return rules for JavaScript."
   `())
 
+(defun codemetrics-rules-julia ()
+  "Return rules for Julia."
+  `())
+
 (defun codemetrics-rules-lua ()
   "Return rules for Lua."
   `((function_declaration . codemetrics-rules-java-method-declaration)

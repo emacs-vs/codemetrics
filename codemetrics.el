@@ -63,6 +63,7 @@
     (js-mode         . ,(codemetrics-rules-javascript))
     (js2-mode        . ,(codemetrics-rules-javascript))
     (js3-mode        . ,(codemetrics-rules-javascript))
+    (julia-mode      . ,(codemetrics-rules-julia))
     (lua-mode        . ,(codemetrics-rules-lua))
     (php-mode        . ,(codemetrics-rules-php))
     (python-mode     . ,(codemetrics-rules-python))
