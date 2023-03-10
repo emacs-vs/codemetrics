@@ -47,6 +47,7 @@ All these functions return a score data indicate the complexity.
 These languages are fairly complete:
 
 - C / C++ / C#
+- Go
 - Java
 - Lua
 
@@ -55,7 +56,6 @@ These languages are in development:
 - Agda
 - Elm
 - Emacs Lisp
-- Go
 - JavaScript / JSX / Julia
 - OCaml
 - PHP / Python

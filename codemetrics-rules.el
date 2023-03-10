@@ -80,7 +80,15 @@
 
 (defun codemetrics-rules-go ()
   "Return rules for Go."
-  `())
+  `((function_declaration        . codemetrics-rules-java-method-declaration)
+    (method_declaration          . codemetrics-rules-java-method-declaration)
+    (func_literal                . (0 t))  ; don't score, but increase nested level
+    (if_statement                . (1 t))
+    (expression_switch_statement . (1 t))
+    (for_statement               . (1 t))
+    ("&&"                        . codemetrics-rules-java-logical-operators)
+    ("||"                        . codemetrics-rules-java-logical-operators)
+    (call_expression             . codemetrics-rules-recursion)))
 
 (defun codemetrics-rules-java ()
   "Return rules for Java."

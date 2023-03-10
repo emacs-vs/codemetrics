@@ -75,12 +75,12 @@ WEIGHT is used to determine the final score."
 ;; (@* "Logger" )
 ;;
 
-(defvar codemetrics--debug-mode nil
+(defvar codemetrics--show-log nil
   "Get more information from the program.")
 
 (defun codemetrics--log (fmt &rest args)
   "Debug message like function `message' with same argument FMT and ARGS."
-  (when codemetrics--debug-mode
+  (when codemetrics--show-log
     (apply 'message fmt args)))
 
 (defvar codemetrics--recursion-identifier nil
@@ -234,7 +234,7 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
              (let* ((rules-data (if (symbolp rule)
                                     (funcall rule node depth nested)
                                   rule))
-                    (weight (nth 0 rules-data))
+                    (weight     (nth 0 rules-data))
                     (inc-nested (nth 1 rules-data)))
                (when inc-nested
                  (if (null nested-level)
@@ -271,11 +271,11 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
   "Handle recursion for most languages uses `identifier' as the keyword."
   (cl-case codemetrics-complexity
     (`cognitive
-     (let ((identifier (car (codemetrics--tsc-find-children node "identifier"))))
-       (if (equal (tsc-node-text identifier)
-                  codemetrics--recursion-identifier)
-           '(1 nil)
-         '(0 nil))))
+     (if-let* ((identifier (car (codemetrics--tsc-find-children node "identifier")))
+               (text (tsc-node-text identifier))
+               ((equal text codemetrics--recursion-identifier)))
+         '(1 nil)
+       '(0 nil)))
     ;; do nothing
     (`cyclomatic '(0 nil))))
 
@@ -447,6 +447,8 @@ For argument NODE, see function `codemetrics-analyze' for more information."
     (goto-char pos)
     (let* ((ov (make-overlay (line-beginning-position)
                              (line-beginning-position))))
+      (overlay-put ov 'invisible t)
+      (overlay-put ov 'priority codemetrics-priority)
       (overlay-put ov 'codemetrics t)
       (push ov codemetrics--ovs)
       ov)))
@@ -484,13 +486,7 @@ For argument NODE, see function `codemetrics-analyze' for more information."
               (when codemetrics-debug-mode
                 (add-face-text-property 0 (length str) 'codemetrics-default nil str))
               (setq str (concat (spaces-string column) str "\n"))
-              ;;(overlay-put ov 'before-string "\n")
-              ;;(overlay-put ov 'display str)
-              (overlay-put ov 'after-string str)
-              ;;(overlay-put ov 'after-string "\n")
-              ;;(overlay-put ov 'face 'codemetrics-default)
-              (overlay-put ov 'invisible t)
-              (overlay-put ov 'priority codemetrics-priority))))))))
+              (overlay-put ov 'after-string str))))))))
 
 (defun codemetrics--after-change (&rest _)
   "Register to `after-change-functions' variable."
