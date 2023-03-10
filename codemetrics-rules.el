@@ -39,6 +39,8 @@
 (declare-function codemetrics-rules--java-outer-loop "codemetrics.el")
 (declare-function codemetrics-rules--julia-macro-expression "codemetrics.el")
 (declare-function codemetrics-rules--lua-binary-expressions "codemetrics.el")
+(declare-function codemetrics-rules--ruby-binary "codemetrics.el")
+(declare-function codemetrics-rules--rust-outer-loop "codemetrics.el")
 
 ;;
 ;; (@* "Rules" )
@@ -148,10 +150,12 @@
     (if_statement        . (1 t))
     (while_statement     . (1 t))
     (for_statement       . (1 t))
-    (catch_clause         . (1 t))
-    (finally_clause       . (1 t))
-    (macro_expression     . codemetrics-rules--julia-macro-expression)
-    (call_expression      . codemetrics-rules--recursion)))
+    (catch_clause        . (1 t))
+    (finally_clause      . (1 t))
+    ("&&"                . codemetrics-rules--logical-operators)
+    ("||"                . codemetrics-rules--logical-operators)
+    (macro_expression    . codemetrics-rules--julia-macro-expression)
+    (call_expression     . codemetrics-rules--recursion)))
 
 (defun codemetrics-rules-lua ()
   "Return rules for Lua."
@@ -174,11 +178,30 @@
 
 (defun codemetrics-rules-ruby ()
   "Return rules for Ruby."
-  `())
+  `((class    . codemetrics-rules--class-declaration)
+    (method   . codemetrics-rules--method-declaration)
+    (if       . (1 t))
+    (while    . (1 t))
+    (for      . (1 t))
+    (do_block . (1 t))
+    (until    . (1 t))
+    (binary   . codemetrics-rules--ruby-binary)
+    (throw    . (1 t))
+    (call     . codemetrics-rules--recursion)))
 
 (defun codemetrics-rules-rust ()
   "Return rules for Rust."
-  `())
+  `((function_item       . codemetrics-rules--method-declaration)
+    (closure_expression  . (0 t))
+    (if_expression       . (1 t))
+    (while_expression    . (1 t))
+    (for_expression      . (1 t))
+    (loop_expression     . (1 t))
+    ("&&"                . codemetrics-rules--logical-operators)
+    ("||"                . codemetrics-rules--logical-operators)
+    (break_expression    . codemetrics-rules--rust-outer-loop)
+    (continue_expression . codemetrics-rules--rust-outer-loop)
+    (macro_invocation    . codemetrics-rules--recursion)))
 
 (defun codemetrics-rules-scala ()
   "Return rules for Scala."

@@ -322,6 +322,14 @@ For argument NODE, see function `codemetrics-analyze' for more information."
        (list (if sequence 1 0) nil)))
     (`cyclomatic '(1 nil))))
 
+(defun codemetrics-rules--outer-loop (node _depth _nested &optional children)
+  "Define rule for outer loop (jump), `break' and `continue' statements.
+
+For argument NODE, see function `codemetrics-analyze' for more information."
+  (cl-case codemetrics-complexity
+    (`cognitive (list (if (<= (tsc-count-children node) children) 0 1) nil))
+    (`cyclomatic '(0 nil))))
+
 (defun codemetrics-rules--recursion (node &rest _)
   "Handle recursion for most languages uses `identifier' as the keyword."
   (cl-case codemetrics-complexity
@@ -339,7 +347,6 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 
 For argument NODE, DEPTH, and NESTED, see function `codemetrics-analyze' for
 more information."
-  (jcs-print )
   (cl-case codemetrics-complexity
     (`cognitive
      (let* ((text (tsc-node-text node))
@@ -357,9 +364,7 @@ more information."
   "Define rule for Java outer loop (jump), `break' and `continue' statements.
 
 For argument NODE, see function `codemetrics-analyze' for more information."
-  (cl-case codemetrics-complexity
-    (`cognitive (list (if (<= (tsc-count-children node) 2) 0 1) nil))
-    (`cyclomatic '(0 nil))))
+  (codemetrics-rules--outer-loop node nil nil 2))
 
 (defun codemetrics-rules--julia-macro-expression (node &rest _)
   "Define rule for Julia `macro' expression.
@@ -386,6 +391,25 @@ For argument NODE, see function `codemetrics-analyze' for more information."
          (setq sequence t))
        (list (if sequence 1 0) nil)))
     (`cyclomatic '(1 nil))))
+
+(defun codemetrics-rules--ruby-binary (node &rest _)
+  "Define rule for Ruby binary.
+
+For argument NODE, see function `codemetrics-analyze' for more information."
+  (cl-case codemetrics-complexity
+    (`cognitive
+     (let ((text (tsc-node-text node))
+           (sequence nil))
+       (when (<= 2 (codemetrics--s-count-matches '("||" "&&") text))
+         (setq sequence t))
+       (list (if sequence 1 0) nil)))
+    (`cyclomatic '(1 nil))))
+
+(defun codemetrics-rules--rust-outer-loop (node &rest _)
+  "Define rule for Rust outer loop (jump), `break' and `continue' statements.
+
+For argument NODE, see function `codemetrics-analyze' for more information."
+  (codemetrics-rules--outer-loop node nil nil 1))
 
 ;;
 ;; (@* "Debug Mode" )
@@ -474,12 +498,18 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 `codemetrics-display'."
   (setq scope (or scope codemetrics-display))
   (cl-case scope
-    (`method '( function_declaration function_definition
-                method_declaration method_definition
-                call))
-    (`class   (append '(class_declaration)
-                      (codemetrics--display-nodes 'class)))
-    (t (user-error "Unknown display scope: %s" scope))))
+    (`method (cl-case major-mode
+               (`elixir-mode '(call))
+               (t '( function_declaration function_definition function_item
+                     method_declaration method_definition
+                     method))))
+    (`class
+     (append (cl-case major-mode
+               (`elixir-mode '(call))
+               (t '(class_declaration class)))
+             (codemetrics--display-nodes 'class)))
+    (t
+     (user-error "Unknown display scope: %s" scope))))
 
 (defun codemetrics--display-this-node-p (scope node)
   "Return non-nil when the NODE is inside the display SCOPE."
