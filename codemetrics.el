@@ -334,7 +334,7 @@ For argument NODE, see function `codemetrics-analyze' for more information."
     ;; do nothing
     (`cyclomatic '(0 nil))))
 
-(defun codemetrics-rules-elixir-call (node depth nested)
+(defun codemetrics-rules--elixir-call (node depth nested)
   "Define rule for Elixir `call' declaration.
 
 For argument NODE, DEPTH, and NESTED, see function `codemetrics-analyze' for
@@ -353,7 +353,7 @@ more information."
               (codemetrics-rules--recursion node depth nested)))))
     (`cyclomatic '(1 nil))))
 
-(defun codemetrics-rules-java-outer-loop (node &rest _)
+(defun codemetrics-rules--java-outer-loop (node &rest _)
   "Define rule for Java outer loop (jump), `break' and `continue' statements.
 
 For argument NODE, see function `codemetrics-analyze' for more information."
@@ -361,7 +361,20 @@ For argument NODE, see function `codemetrics-analyze' for more information."
     (`cognitive (list (if (<= (tsc-count-children node) 2) 0 1) nil))
     (`cyclomatic '(0 nil))))
 
-(defun codemetrics-rules-lua-binary-expressions (node &rest _)
+(defun codemetrics-rules--julia-macro-expression (node &rest _)
+  "Define rule for Julia `macro' expression.
+
+For argument NODE, see function `codemetrics-analyze' for more information."
+  (cl-case codemetrics-complexity
+    (`cognitive
+     (if-let* ((identifier (car (codemetrics--tsc-find-children-traverse node "identifier")))
+               (text (tsc-node-text identifier))
+               ((string= text "goto")))
+         '(1 nil)
+       '(0 nil)))
+    (`cyclomatic '(0 nil))))
+
+(defun codemetrics-rules--lua-binary-expressions (node &rest _)
   "Define rule for Lua binary expressions.
 
 For argument NODE, see function `codemetrics-analyze' for more information."

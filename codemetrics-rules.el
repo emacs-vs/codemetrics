@@ -32,11 +32,13 @@
 
 (declare-function codemetrics-rules--class-declaration "codemetrics.el")
 (declare-function codemetrics-rules--method-declaration "codemetrics.el")
-(declare-function codemetrics-rules--recursion "codemetrics.el")
-(declare-function codemetrics-rules-elixir-call "codemetrics.el")
-(declare-function codemetrics-rules-java-outer-loop "codemetrics.el")
 (declare-function codemetrics-rules--logical-operators "codemetrics.el")
-(declare-function codemetrics-rules-lua-binary-expressions "codemetrics.el")
+(declare-function codemetrics-rules--recursion "codemetrics.el")
+
+(declare-function codemetrics-rules--elixir-call "codemetrics.el")
+(declare-function codemetrics-rules--java-outer-loop "codemetrics.el")
+(declare-function codemetrics-rules--julia-macro-expression "codemetrics.el")
+(declare-function codemetrics-rules--lua-binary-expressions "codemetrics.el")
 
 ;;
 ;; (@* "Rules" )
@@ -56,7 +58,7 @@
   "Return rules for C."
   `((function_definition . codemetrics-rules--method-declaration)
     (lambda_expression   . (1 t))
-    (preproc_ifdef       . (1 t))
+    (preproc_ifdef       . (1 t))  ; macro
     (if_statement        . (1 t))
     (switch_statement    . (1 t))
     (while_statement     . (1 t))
@@ -85,13 +87,14 @@
     (for_statement         . (1 t))
     (do_statement          . (1 t))
     (catch_clause          . (1 t))
+    (finally_clause        . (1 t))
     ("&&"                  . codemetrics-rules--logical-operators)
     ("||"                  . codemetrics-rules--logical-operators)
     (invocation_expression . codemetrics-rules--recursion)))
 
 (defun codemetrics-rules-elixir ()
   "Return rules for Elixir."
-  `((call . codemetrics-rules-elixir-call)))
+  `((call . codemetrics-rules--elixir-call)))
 
 (defun codemetrics-rules-go ()
   "Return rules for Go."
@@ -119,8 +122,8 @@
     (finally_clause     . (1 t))
     ("&&"               . codemetrics-rules--logical-operators)
     ("||"               . codemetrics-rules--logical-operators)
-    (continue_statement . codemetrics-rules-java-outer-loop)
-    (break_statement    . codemetrics-rules-java-outer-loop)
+    (continue_statement . codemetrics-rules--java-outer-loop)
+    (break_statement    . codemetrics-rules--java-outer-loop)
     (method_invocation  . codemetrics-rules--recursion)))
 
 (defun codemetrics-rules-javascript ()
@@ -144,7 +147,11 @@
   `((function_definition . codemetrics-rules--method-declaration)
     (if_statement        . (1 t))
     (while_statement     . (1 t))
-    (for_statement       . (1 t))))
+    (for_statement       . (1 t))
+    (catch_clause         . (1 t))
+    (finally_clause       . (1 t))
+    (macro_expression     . codemetrics-rules--julia-macro-expression)
+    (call_expression      . codemetrics-rules--recursion)))
 
 (defun codemetrics-rules-lua ()
   "Return rules for Lua."
@@ -153,7 +160,7 @@
     (while_statement      . (1 t))
     (for_statement        . (1 t))
     (repeat_statement     . (1 t))
-    (binary_expression    . codemetrics-rules-lua-binary-expressions)
+    (binary_expression    . codemetrics-rules--lua-binary-expressions)
     (goto_statement       . (1 t))
     (function_call        . codemetrics-rules--recursion)))
 
