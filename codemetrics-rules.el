@@ -43,6 +43,10 @@
 
 ;; TODO(everyone): keep the function alphabetically sorted
 
+(defun codemetrics-rules-bash ()
+  "Return rules for Bash."
+  `())
+
 (defun codemetrics-rules-c ()
   "Return rules for C."
   `((function_definition . codemetrics-rules-java-method-declaration)
@@ -140,6 +144,14 @@
 
 (defun codemetrics-rules-rust ()
   "Return rules for Rust."
+  `())
+
+(defun codemetrics-rules-scala ()
+  "Return rules for Scala."
+  `())
+
+(defun codemetrics-rules-swift ()
+  "Return rules for Swift."
   `())
 
 (defun codemetrics-rules-typescript ()

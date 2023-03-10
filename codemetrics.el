@@ -70,6 +70,9 @@
     (ruby-mode       . ,(codemetrics-rules-ruby))
     (rust-mode       . ,(codemetrics-rules-rust))
     (rustic-mode     . ,(codemetrics-rules-rust))
+    (sh-mode         . ,(codemetrics-rules-bash))
+    (scala-mode      . ,(codemetrics-rules-scala))
+    (swift-mode      . ,(codemetrics-rules-swift))
     (typescript-mode . ,(codemetrics-rules-typescript)))
   "An alist of (major-mode . (node-type . weight)).
 

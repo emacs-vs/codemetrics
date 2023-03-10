@@ -54,7 +54,9 @@ These languages are fairly complete:
 These languages are in development:
 
 - Agda
+- Bash
 - Elm
+- Elixir
 - Emacs Lisp
 - JavaScript / JSX / Julia
 - OCaml
