@@ -35,7 +35,7 @@
 (declare-function codemetrics-rules--recursion "codemetrics.el")
 (declare-function codemetrics-rules-elixir-call "codemetrics.el")
 (declare-function codemetrics-rules-java-outer-loop "codemetrics.el")
-(declare-function codemetrics-rules-java-logical-operators "codemetrics.el")
+(declare-function codemetrics-rules--logical-operators "codemetrics.el")
 (declare-function codemetrics-rules-lua-binary-expressions "codemetrics.el")
 
 ;;
@@ -62,8 +62,8 @@
     (while_statement     . (1 t))
     (for_statement       . (1 t))
     (do_statement        . (1 t))
-    ("&&"                . codemetrics-rules-java-logical-operators)
-    ("||"                . codemetrics-rules-java-logical-operators)
+    ("&&"                . codemetrics-rules--logical-operators)
+    ("||"                . codemetrics-rules--logical-operators)
     (goto_statement      . (1 t))
     (call_expression     . codemetrics-rules--recursion)))
 
@@ -83,8 +83,8 @@
     (while_statement       . (1 t))
     (for_statement         . (1 t))
     (do_statement          . (1 t))
-    ("&&"                  . codemetrics-rules-java-logical-operators)
-    ("||"                  . codemetrics-rules-java-logical-operators)
+    ("&&"                  . codemetrics-rules--logical-operators)
+    ("||"                  . codemetrics-rules--logical-operators)
     (invocation_expression . codemetrics-rules--recursion)))
 
 (defun codemetrics-rules-elixir ()
@@ -99,8 +99,8 @@
     (if_statement                . (1 t))
     (expression_switch_statement . (1 t))
     (for_statement               . (1 t))
-    ("&&"                        . codemetrics-rules-java-logical-operators)
-    ("||"                        . codemetrics-rules-java-logical-operators)
+    ("&&"                        . codemetrics-rules--logical-operators)
+    ("||"                        . codemetrics-rules--logical-operators)
     (call_expression             . codemetrics-rules--recursion)))
 
 (defun codemetrics-rules-java ()
@@ -114,15 +114,26 @@
     (for_statement      . (1 t))
     (do_statement       . (1 t))
     (catch_clause       . (1 t))
-    ("&&"               . codemetrics-rules-java-logical-operators)
-    ("||"               . codemetrics-rules-java-logical-operators)
+    ("&&"               . codemetrics-rules--logical-operators)
+    ("||"               . codemetrics-rules--logical-operators)
     (continue_statement . codemetrics-rules-java-outer-loop)
     (break_statement    . codemetrics-rules-java-outer-loop)
     (method_invocation  . codemetrics-rules--recursion)))
 
 (defun codemetrics-rules-javascript ()
   "Return rules for JavaScript."
-  `())
+  `((function_declaration . codemetrics-rules--method-declaration)
+    (function             . (0 t))  ; traditional anonymous function
+    (arrow_function       . (0 t))  ; don't score, but increase nested level
+    (if_statement         . (1 t))
+    (switch_statement     . (1 t))
+    (while_statement      . (1 t))
+    (for_statement        . (1 t))
+    (do_statement         . (1 t))
+    (catch_clause         . (1 t))
+    ("&&"                 . codemetrics-rules--logical-operators)
+    ("||"                 . codemetrics-rules--logical-operators)
+    (call_expression      . codemetrics-rules--recursion)))
 
 (defun codemetrics-rules-julia ()
   "Return rules for Julia."
@@ -165,7 +176,10 @@
 
 (defun codemetrics-rules-typescript ()
   "Return rules for TypeScript."
-  `())
+  (append
+   (codemetrics-rules-javascript)
+   `((class_declaration . codemetrics-rules--class-declaration)
+     (method_definition . codemetrics-rules--method-declaration))))
 
 (provide 'codemetrics-rules)
 ;;; codemetrics-rules.el ends here

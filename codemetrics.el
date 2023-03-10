@@ -309,6 +309,19 @@ more information."
                   '(0 nil)))
     (`cyclomatic '(1 nil))))
 
+(defun codemetrics-rules--logical-operators (node &rest _)
+  "Define rule for logical operators.
+
+For argument NODE, see function `codemetrics-analyze' for more information."
+  (cl-case codemetrics-complexity
+    (`cognitive
+     (let ((parent (tsc-get-parent node))
+           (sequence nil))
+       (when (<= 2 (codemetrics--s-count-matches '("||" "&&") (tsc-node-text parent)))
+         (setq sequence t))
+       (list (if sequence 1 0) nil)))
+    (`cyclomatic '(1 nil))))
+
 (defun codemetrics-rules--recursion (node &rest _)
   "Handle recursion for most languages uses `identifier' as the keyword."
   (cl-case codemetrics-complexity
@@ -347,19 +360,6 @@ For argument NODE, see function `codemetrics-analyze' for more information."
   (cl-case codemetrics-complexity
     (`cognitive (list (if (<= (tsc-count-children node) 2) 0 1) nil))
     (`cyclomatic '(0 nil))))
-
-(defun codemetrics-rules-java-logical-operators (node &rest _)
-  "Define rule for Java logical operators.
-
-For argument NODE, see function `codemetrics-analyze' for more information."
-  (cl-case codemetrics-complexity
-    (`cognitive
-     (let ((parent (tsc-get-parent node))
-           (sequence nil))
-       (when (<= 2 (codemetrics--s-count-matches '("||" "&&") (tsc-node-text parent)))
-         (setq sequence t))
-       (list (if sequence 1 0) nil)))
-    (`cyclomatic '(1 nil))))
 
 (defun codemetrics-rules-lua-binary-expressions (node &rest _)
   "Define rule for Lua binary expressions.
@@ -461,9 +461,9 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 `codemetrics-display'."
   (setq scope (or scope codemetrics-display))
   (cl-case scope
-    (`method '(method_declaration
-               function_definition function_declaration
-               call))
+    (`method '( function_declaration function_definition
+                method_declaration method_definition
+                call))
     (`class   (append '(class_declaration)
                       (codemetrics--display-nodes 'class)))
     (t (user-error "Unknown display scope: %s" scope))))

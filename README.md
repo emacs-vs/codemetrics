@@ -49,8 +49,9 @@ These languages are fairly complete:
 - Bash
 - C / C++ / C#
 - Go
-- Java
+- Java / JavaScript / JSX
 - Lua
+- TypeScript / TSX
 
 These languages are in development:
 
@@ -58,12 +59,11 @@ These languages are in development:
 - Elm
 - Elixir
 - Emacs Lisp
-- JavaScript / JSX / Julia
+- Julia
 - OCaml
 - PHP / Python
 - Ruby / Rust
 - Scala / Swift
-- TypeScript / TSX
 
 ## 🔗 References
 
