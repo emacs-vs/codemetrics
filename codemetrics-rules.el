@@ -170,7 +170,7 @@
 
 (defun codemetrics-rules-php ()
   "Return rules for PHP."
-  `((class_declaration        . codemetrics-rules--method-declaration)
+  `((class_declaration        . codemetrics-rules--class-declaration)
     (function_definition      . codemetrics-rules--method-declaration)
     (if_statement             . (1 t))
     (switch_statement         . (1 t))
@@ -231,7 +231,11 @@
 
 (defun codemetrics-rules-scala ()
   "Return rules for Scala."
-  `())
+  `((class_definition    . codemetrics-rules--class-declaration)
+    (function_definition . codemetrics-rules--method-declaration)
+    (if_expression       . (1 t))
+    (match_expression    . (1 t))
+    (call_expression     . codemetrics-rules--recursion)))
 
 (defun codemetrics-rules-swift ()
   "Return rules for Swift."
