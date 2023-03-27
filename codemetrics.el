@@ -256,12 +256,12 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
                    nested 0))
            (when-let* ((type (tsc-node-type node))
                        (a-rule (assoc type rules))  ; cons
-                       (rule (cdr a-rule)))
-             (let* ((rules-data (if (functionp rule)
-                                    (funcall rule node depth nested)
-                                  rule))
-                    (weight     (nth 0 rules-data))
-                    (inc-nested (nth 1 rules-data)))
+                       (rule (cdr a-rule))
+                       (rules-data (if (functionp rule)
+                                       (funcall rule node depth nested)
+                                     rule)))
+             (let ((weight     (nth 0 rules-data))
+                   (inc-nested (nth 1 rules-data)))
                (when inc-nested
                  (if (null nested-level)
                      (setq nested-level depth
