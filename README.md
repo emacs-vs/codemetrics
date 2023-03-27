@@ -231,7 +231,7 @@ Here are some techniques for finding your desired nodes in tree-sitter.
 To look for the correct node you have three options:
 
 - look at the `tree-sitter-[lang]/grammar.js` implementation. In the above
-  example, `block` node is defined in the
+  example, `if_statement` node is defined in the
   [tree-sitter-c-sharp](https://github.com/tree-sitter/tree-sitter-c-sharp)'s
   `grammar.js` file
 - open a file of your language choice in emacs and `M-x tree-sitter-debug-mode`.
