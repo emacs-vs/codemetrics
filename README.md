@@ -177,9 +177,8 @@ algorithm.
 
 Then the function needs to return an integer represent the score and a
 boolean represent increment of the nested level in the form
-`(score-to-add . nested?)`. If `nil` is returned instead, then no analysis is
-done. This can be useful if you want to add extra conditional logic onto your
-analysis.
+`(score-to-add . nested?)`. This can be useful if you want to add extra
+conditional logic onto your analysis.
 
 As an example of an analysis function, take a look at the definition of the
 basic `codemetrics-rules--class-declaration`.
