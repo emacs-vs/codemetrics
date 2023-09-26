@@ -646,8 +646,8 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 
 (defun codemetrics--display-start (buffer)
   "Display result in BUFFER."
-  (when codemetrics-mode
-    (codemetrics--with-current-buffer buffer  ; make sure buffer still exists
+  (codemetrics--with-current-buffer buffer  ; make sure buffer still exists
+    (when codemetrics-mode
       (codemetrics--delete-ovs)               ; clean up before re-rendering
       (let* ((report (codemetrics-buffer))
              (report (if codemetrics-debug-mode
