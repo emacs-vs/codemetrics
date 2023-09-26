@@ -57,6 +57,7 @@
     (c++-mode        . ,(codemetrics-rules-c++))
     (csharp-mode     . ,(codemetrics-rules-csharp))
     (elixir-mode     . ,(codemetrics-rules-elixir))
+    (emacs-lisp-mode . ,(codemetrics-rules-elisp))
     (go-mode         . ,(codemetrics-rules-go))
     (java-mode       . ,(codemetrics-rules-java))
     (javascript-mode . ,(codemetrics-rules-javascript))
@@ -136,11 +137,13 @@ For arguments STR, START, and END, see function `s-count-matches' for details."
       number
     (1+ number)))
 
-(defun codemetrics--tsc-compare-type (node type)
+(defun codemetrics--compare-type (node type)
   "Compare NODE's type to TYPE."
   ;; tsc-node-type returns a symbol or a string and `string=' automatically
   ;; converts symbols to strings
-  (string= (tsc-node-type node) type))
+  (let ((node-type (tsc-node-type node)))
+    (if (listp type) (member node-type type)
+      (string= node-type type))))
 
 (defun codemetrics--get-children (node)
   "Get list of direct children of NODE."
@@ -158,7 +161,7 @@ For arguments STR, START, and END, see function `s-count-matches' for details."
 (defun codemetrics--tsc-find-children (node type)
   "Search through the children of NODE to find all with type equal to TYPE;
 then return that list."
-  (cl-remove-if-not (lambda (child) (codemetrics--tsc-compare-type child type))
+  (cl-remove-if-not (lambda (child) (codemetrics--compare-type child type))
                     (codemetrics--get-children node)))
 
 (defun codemetrics--tsc-find-children-traverse (node type)
@@ -166,8 +169,18 @@ then return that list."
 
 For arguments NODE and TYPE, see function `codemetrics--tsc-find-children' for
 more information."
-  (cl-remove-if-not (lambda (child) (codemetrics--tsc-compare-type child type))
+  (cl-remove-if-not (lambda (child) (codemetrics--compare-type child type))
                     (codemetrics--get-children-traverse node)))
+
+(defun codemetrics--find-parent (node type)
+  "Find the TYPE of parent from NODE."
+  (let ((parent (tsc-get-parent node))
+        (break))
+    (while (and parent (not break))
+      (setq break (codemetrics--compare-type parent type))
+      (unless break
+        (setq parent (tsc-get-parent parent))))
+    parent))
 
 ;;
 ;; (@* "Core" )
@@ -323,9 +336,11 @@ more information."
 
 For argument NODE, see function `codemetrics-analyze' for more information."
   (codemetrics-with-complexity
-    (let ((parent (tsc-get-parent node))
-          (sequence nil))
-      (when (<= 2 (codemetrics--s-count-matches '("||" "&&") (tsc-node-text parent)))
+    (let* ((parent (tsc-get-parent node))
+           (parent-text (tsc-node-text parent))
+           (sequence)
+           (count (codemetrics--s-count-matches '("||" "&&") parent-text)))
+      (when (<= 2 count)
         (setq sequence t))
       (list (if sequence 1 0) nil))
     '(1 nil)))
@@ -365,6 +380,54 @@ more information."
             (t
              (codemetrics-rules--recursion node depth nested))))
     '(1 nil)))
+
+(defun codemetrics--elisp-function-name (node)
+  "Return elisp function name by NODE."
+  (when-let* ((func-node (codemetrics--find-parent node "function_definition"))
+              (first-node (tsc-get-nth-child func-node 2)))
+    (tsc-node-text first-node)))
+
+(defun codemetrics--elisp-statement-p (text)
+  "Return non-nil if TEXT is elisp statement."
+  (member text '("if" "when" "unless"
+                 "if-let" "if-let*" "when-let" "when-let*"
+                 "cond" "pcase" "case" "cl-case"
+                 "dolist" "while" "loop" "cl-loop")))
+
+(defun codemetrics-rules--elisp-list (node &rest _)
+  "Define rule for Emacs Lisp `list' node.
+
+For argument NODE, see function `codemetrics-analyze' for more information."
+  (let* ((symbol (car (codemetrics--tsc-find-children node "symbol")))
+         (text (ignore-errors (tsc-node-text symbol)))
+         (func-name (codemetrics--elisp-function-name node)))
+    (cond ((codemetrics--elisp-statement-p text)
+           '(1 t))
+          ((member text `(,func-name))  ; recursion
+           '(1 nil))
+          (t
+           '(0 nil)))))
+
+(defun codemetrics-rules--elisp-special-form (node &rest _)
+  "Define rule for Emacs Lisp `special_form' node.
+
+For argument NODE, see function `codemetrics-analyze' for more information."
+  (let* ((symbol (tsc-get-nth-child node 1))
+         (text (tsc-node-text symbol))
+         (parent (tsc-get-parent node))
+         (parent-text (tsc-node-text parent)))
+    (cond ((codemetrics--elisp-statement-p text)
+           '(1 t))
+          ((member text '("lambda"))
+           '(0 t))
+          ((member text '("and" "or"))
+           (if-let* ((opts (codemetrics--s-count-matches '("([ ]*and " "([ ]*or ")
+                                                         parent-text))
+                     ((<= 2 opts)))
+               '(1 nil)
+             '(0 nil)))
+          (t
+           '(0 nil)))))
 
 (defun codemetrics-rules--java-outer-loop (node &rest _)
   "Define rule for Java outer loop (jump), `break' and `continue' statements.
@@ -449,6 +512,29 @@ For argument NODE, see function `codemetrics-analyze' for more information."
   :lighter "CodeMetrics Debug"
   (codemetrics--ensure-ts
     (codemetrics--after-change)))
+
+;;
+;; (@* "Minor Mode" )
+;;
+
+(defun codemetrics--enable ()
+  "Start `codemetrics-mode'."
+  (add-hook 'after-change-functions #'codemetrics--after-change nil t)
+  (codemetrics--after-change))
+
+(defun codemetrics--disable ()
+  "End `codemetrics-mode'."
+  (remove-hook 'after-change-functions #'codemetrics--after-change t)
+  (codemetrics--delete-ovs))
+
+;;;###autoload
+(define-minor-mode codemetrics-mode
+  "Display codemetrics result in current buffer."
+  :group 'codemetrics
+  :init-value nil
+  :lighter "CodeMetrics"
+  (codemetrics--ensure-ts
+    (if codemetrics-mode (codemetrics--enable) (codemetrics--disable))))
 
 ;;
 ;; (@* "Display" )
@@ -561,33 +647,34 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 (defun codemetrics--display-start (buffer)
   "Display result in BUFFER."
   (codemetrics--with-current-buffer buffer  ; make sure buffer still exists
-    (codemetrics--delete-ovs)               ; clean up before re-rendering
-    (let* ((report (codemetrics-buffer))
-           (report (if codemetrics-debug-mode
-                       report
-                     (codemetrics--accumulate report)))
-           (data (cdr report))              ; list of `node' and `score'
-           (scope (codemetrics--display-nodes)))
-      (dolist (it data)
-        (let ((node             (nth 0 it))
-              (depth            (nth 1 it))
-              (node-score       (nth 2 it))
-              (accumulate-score (nth 3 it)))
-          (when (codemetrics--display-this-node-p scope node)
-            (let* ((pos (tsc-node-start-position node))
-                   (column (save-excursion (goto-char pos) (current-column)))
-                   (ov (codemetrics--make-ov pos))
-                   (score-or-percent (if codemetrics-debug-mode
-                                         node-score
-                                       (codemetrics-percentage accumulate-score)))
-                   (str (if codemetrics-debug-mode
-                            (format "%s, +%s" depth score-or-percent)
-                          (format (codemetrics--complexity-symbol score-or-percent)
-                                  score-or-percent))))
-              (when codemetrics-debug-mode
-                (add-face-text-property 0 (length str) 'codemetrics-default nil str))
-              (setq str (concat (spaces-string column) str "\n"))
-              (overlay-put ov 'after-string str))))))))
+    (when codemetrics-mode
+      (codemetrics--delete-ovs)               ; clean up before re-rendering
+      (let* ((report (codemetrics-buffer))
+             (report (if codemetrics-debug-mode
+                         report
+                       (codemetrics--accumulate report)))
+             (data (cdr report))              ; list of `node' and `score'
+             (scope (codemetrics--display-nodes)))
+        (dolist (it data)
+          (let ((node             (nth 0 it))
+                (depth            (nth 1 it))
+                (node-score       (nth 2 it))
+                (accumulate-score (nth 3 it)))
+            (when (codemetrics--display-this-node-p scope node)
+              (let* ((pos (tsc-node-start-position node))
+                     (column (save-excursion (goto-char pos) (current-column)))
+                     (ov (codemetrics--make-ov pos))
+                     (score-or-percent (if codemetrics-debug-mode
+                                           node-score
+                                         (codemetrics-percentage accumulate-score)))
+                     (str (if codemetrics-debug-mode
+                              (format "%s, +%s" depth score-or-percent)
+                            (format (codemetrics--complexity-symbol score-or-percent)
+                                    score-or-percent))))
+                (when codemetrics-debug-mode
+                  (add-face-text-property 0 (length str) 'codemetrics-default nil str))
+                (setq str (concat (spaces-string column) str "\n"))
+                (overlay-put ov 'after-string str)))))))))
 
 (defun codemetrics--after-change (&rest _)
   "Register to `after-change-functions' variable."
@@ -596,25 +683,6 @@ For argument NODE, see function `codemetrics-analyze' for more information."
   (setq codemetrics--display-timer
         (run-with-idle-timer codemetrics-delay nil
                              #'codemetrics--display-start (current-buffer))))
-
-(defun codemetrics--enable ()
-  "Start `codemetrics-mode'."
-  (add-hook 'after-change-functions #'codemetrics--after-change nil t)
-  (codemetrics--after-change))
-
-(defun codemetrics--disable ()
-  "End `codemetrics-mode'."
-  (remove-hook 'after-change-functions #'codemetrics--after-change t)
-  (codemetrics--delete-ovs))
-
-;;;###autoload
-(define-minor-mode codemetrics-mode
-  "Display codemetrics result in current buffer."
-  :group 'codemetrics
-  :init-value nil
-  :lighter "CodeMetrics"
-  (codemetrics--ensure-ts
-    (if codemetrics-mode (codemetrics--enable) (codemetrics--disable))))
 
 (provide 'codemetrics)
 ;;; codemetrics.el ends here

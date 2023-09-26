@@ -8,9 +8,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## 0.1.1 (Unreleased)
 > Released N/A
 
-* N/A
+* Add Elisp support (#6)
 
 ## 0.1.0 
 > Released Mar 10, 2023
 
-* Initial release.
+* Initial release

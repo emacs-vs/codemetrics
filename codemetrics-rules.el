@@ -36,6 +36,8 @@
 (declare-function codemetrics-rules--recursion "codemetrics.el")
 
 (declare-function codemetrics-rules--elixir-call "codemetrics.el")
+(declare-function codemetrics-rules--elisp-special-form "codemetrics.el")
+(declare-function codemetrics-rules--elisp-list "codemetrics.el")
 (declare-function codemetrics-rules--java-outer-loop "codemetrics.el")
 (declare-function codemetrics-rules--julia-macro-expression "codemetrics.el")
 (declare-function codemetrics-rules--lua-binary-expressions "codemetrics.el")
@@ -98,6 +100,12 @@
 (defun codemetrics-rules-elixir ()
   "Return rules for Elixir."
   `((call . codemetrics-rules--elixir-call)))
+
+(defun codemetrics-rules-elisp ()
+  "Return rules for Emacs Lisp."
+  `((function_definition . codemetrics-rules--method-declaration)
+    (special_form        . codemetrics-rules--elisp-special-form)
+    (list                . codemetrics-rules--elisp-list)))
 
 (defun codemetrics-rules-go ()
   "Return rules for Go."
