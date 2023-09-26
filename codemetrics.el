@@ -423,7 +423,7 @@ For argument NODE, see function `codemetrics-analyze' for more information."
           ((member text '("and" "or"))
            (if-let* ((opts (codemetrics--s-count-matches '("([ ]*and " "([ ]*or ")
                                                          parent-text))
-                     (_ (<= 2 opts)))
+                     ((<= 2 opts)))
                '(1 nil)
              '(0 nil)))
           (t
@@ -512,6 +512,29 @@ For argument NODE, see function `codemetrics-analyze' for more information."
   :lighter "CodeMetrics Debug"
   (codemetrics--ensure-ts
     (codemetrics--after-change)))
+
+;;
+;; (@* "Minor Mode" )
+;;
+
+(defun codemetrics--enable ()
+  "Start `codemetrics-mode'."
+  (add-hook 'after-change-functions #'codemetrics--after-change nil t)
+  (codemetrics--after-change))
+
+(defun codemetrics--disable ()
+  "End `codemetrics-mode'."
+  (remove-hook 'after-change-functions #'codemetrics--after-change t)
+  (codemetrics--delete-ovs))
+
+;;;###autoload
+(define-minor-mode codemetrics-mode
+  "Display codemetrics result in current buffer."
+  :group 'codemetrics
+  :init-value nil
+  :lighter "CodeMetrics"
+  (codemetrics--ensure-ts
+    (if codemetrics-mode (codemetrics--enable) (codemetrics--disable))))
 
 ;;
 ;; (@* "Display" )
@@ -660,25 +683,6 @@ For argument NODE, see function `codemetrics-analyze' for more information."
   (setq codemetrics--display-timer
         (run-with-idle-timer codemetrics-delay nil
                              #'codemetrics--display-start (current-buffer))))
-
-(defun codemetrics--enable ()
-  "Start `codemetrics-mode'."
-  (add-hook 'after-change-functions #'codemetrics--after-change nil t)
-  (codemetrics--after-change))
-
-(defun codemetrics--disable ()
-  "End `codemetrics-mode'."
-  (remove-hook 'after-change-functions #'codemetrics--after-change t)
-  (codemetrics--delete-ovs))
-
-;;;###autoload
-(define-minor-mode codemetrics-mode
-  "Display codemetrics result in current buffer."
-  :group 'codemetrics
-  :init-value nil
-  :lighter "CodeMetrics"
-  (codemetrics--ensure-ts
-    (if codemetrics-mode (codemetrics--enable) (codemetrics--disable))))
 
 (provide 'codemetrics)
 ;;; codemetrics.el ends here
