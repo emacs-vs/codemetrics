@@ -99,6 +99,7 @@ These languages are fairly complete:
 
 - Bash
 - C / C++ / C#
+- Elisp
 - Go
 - Java / JavaScript / JSX / Julia
 - Lua
@@ -112,7 +113,6 @@ These languages are in development:
 - Agda
 - Elm
 - Elixir
-- Emacs Lisp
 - OCaml
 - Scala (upstream, kinda buggy)
 
