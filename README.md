@@ -26,20 +26,23 @@ which was proposed by G. Ann Campbell in
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
 
-- [💾 Installation](#💾-installation)
-  - [🔍 Method 1. with `straight.el` and `use-package`:](#🔍-method-1-with-straightel-and-use-package)
-  - [🔍 Method 2. Manual](#🔍-method-2-manual)
-- [🖥 Usage](#🖥-usage)
-  - [📚 Use it as a library](#📚-use-it-as-a-library)
-- [🔨 Supported languages](#🔨-supported-languages)
-- [📝 Customization](#📝-customization)
-  - [⚪ Analysis on new nodes](#⚪-analysis-on-new-nodes)
-    - [❔ Example](#❔-example)
-  - [🔍 Writing new analysis functions](#🔍-writing-new-analysis-functions)
-- [🔗 References](#🔗-references)
-- [Contribute](#contribute)
-  - [❓ How to add an analysis rules?](#❓-how-to-add-an-analysis-rules)
-    - [🔍 Where can I look for tree-sitter node?](#🔍-where-can-i-look-for-tree-sitter-node)
+- [Code Metrics](#code-metrics)
+  - [💾 Installation](#💾-installation)
+    - [🔍 Method 1. with `straight.el` and `use-package`:](#🔍-method-1-with-straightel-and-use-package)
+    - [🔍 Method 2. Manual](#🔍-method-2-manual)
+  - [🖥 Usage](#🖥-usage)
+    - [📚 Use it as a library](#📚-use-it-as-a-library)
+  - [🔨 Supported languages](#🔨-supported-languages)
+  - [📝 Customization](#📝-customization)
+    - [⚪ Analysis on new nodes](#⚪-analysis-on-new-nodes)
+      - [❔ Example](#❔-example)
+    - [🔍 Writing new analysis functions](#🔍-writing-new-analysis-functions)
+  - [🔗 References](#🔗-references)
+  - [🛠️ Contribute](#🛠️-contribute)
+    - [❓ How to add an analysis rules?](#❓-how-to-add-an-analysis-rules)
+      - [🔍 Where can I look for tree-sitter node?](#🔍-where-can-i-look-for-tree-sitter-node)
+    - [🔬 Development](#🔬-development)
+  - [⚜️ License](#⚜️-license)
 
 <!-- markdown-toc end -->
 
