@@ -39,9 +39,9 @@ which was proposed by G. Ann Campbell in
     - [🔍 Writing new analysis functions](#🔍-writing-new-analysis-functions)
   - [🔗 References](#🔗-references)
   - [🛠️ Contribute](#🛠️-contribute)
+    - [🔬 Development](#🔬-development)
     - [❓ How to add an analysis rules?](#❓-how-to-add-an-analysis-rules)
       - [🔍 Where can I look for tree-sitter node?](#🔍-where-can-i-look-for-tree-sitter-node)
-    - [🔬 Development](#🔬-development)
   - [⚜️ License](#⚜️-license)
 
 <!-- markdown-toc end -->
