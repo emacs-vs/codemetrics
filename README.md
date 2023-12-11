@@ -214,39 +214,6 @@ clone and make pull requests to this repository. Or you can
 clone the project and establish your own branch of this tool.
 Any methods are welcome!
 
-### ❓ How to add an analysis rules?
-
-When adding a new analysis rules, add the analysis definition function to
-`codemetrics.el` itself near where the other rules functions live and then add
-the parser to `codemetrics-rules.el` file. Finally, if you are adding support
-for a new language, remember to add it to the `codemetrics-rules` variable.
-
-When creating a new parser, name it `codemetrics-rules-<language>`.
-
-When creating a new analysis function, name it
-`codemetrics-rules-<language>-<feature>` or something similar.
-
-#### 🔍 Where can I look for tree-sitter node?
-
-Here are some techniques for finding your desired nodes in tree-sitter.
-
-To look for the correct node you have three options:
-
-- look at the `tree-sitter-[lang]/grammar.js` implementation. In the above
-  example, `if_statement` node is defined in the
-  [tree-sitter-c-sharp](https://github.com/tree-sitter/tree-sitter-c-sharp)'s
-  `grammar.js` file
-- open a file of your language choice in emacs and `M-x tree-sitter-debug-mode`.
-  This will display the whole s-expr representing your file
-- `(message "%S" (tsc-node-to-sexp))` in your function to display what your
-  function is seeing
-
-> ⚠️ Warning
->
-> Make sure you look into the correct repository. Repositories are managed
-> under [tree-sitter-langs](https://github.com/emacs-tree-sitter/tree-sitter-langs)'s
-> using git submodule. Some tree-sitter module aren't using the latest version!
-
 ### 🔬 Development
 
 To run the test locally, you will need the following tools:
@@ -288,6 +255,39 @@ $ eask lint package
 ```
 
 *📝 P.S. For more information, find the Eask manual at https://emacs-eask.github.io/.*
+
+### ❓ How to add an analysis rules?
+
+When adding a new analysis rules, add the analysis definition function to
+`codemetrics.el` itself near where the other rules functions live and then add
+the parser to `codemetrics-rules.el` file. Finally, if you are adding support
+for a new language, remember to add it to the `codemetrics-rules` variable.
+
+When creating a new parser, name it `codemetrics-rules-<language>`.
+
+When creating a new analysis function, name it
+`codemetrics-rules-<language>-<feature>` or something similar.
+
+#### 🔍 Where can I look for tree-sitter node?
+
+Here are some techniques for finding your desired nodes in tree-sitter.
+
+To look for the correct node you have three options:
+
+- look at the `tree-sitter-[lang]/grammar.js` implementation. In the above
+  example, `if_statement` node is defined in the
+  [tree-sitter-c-sharp](https://github.com/tree-sitter/tree-sitter-c-sharp)'s
+  `grammar.js` file
+- open a file of your language choice in emacs and `M-x tree-sitter-debug-mode`.
+  This will display the whole s-expr representing your file
+- `(message "%S" (tsc-node-to-sexp))` in your function to display what your
+  function is seeing
+
+> ⚠️ Warning
+>
+> Make sure you look into the correct repository. Repositories are managed
+> under [tree-sitter-langs](https://github.com/emacs-tree-sitter/tree-sitter-langs)'s
+> using git submodule. Some tree-sitter module aren't using the latest version!
 
 ## ⚜️ License
 
