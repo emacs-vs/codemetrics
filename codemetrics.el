@@ -1,6 +1,6 @@
 ;;; codemetrics.el --- Plugin shows complexity information  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2023  Shen, Jen-Chieh
+;; Copyright (C) 2023-2024  Shen, Jen-Chieh
 
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; Maintainer: Shen, Jen-Chieh <jcs090218@gmail.com>
