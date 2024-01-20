@@ -2,7 +2,7 @@
          "0.1.0"
          "Plugin shows complexity information")
 
-(website-url "https://github.com/jcs-elpa/codemetrics")
+(website-url "https://github.com/emacs-vs/codemetrics")
 (keywords "convenience" "complexity")
 
 (package-file "codemetrics.el")

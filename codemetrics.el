@@ -4,7 +4,7 @@
 
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; Maintainer: Shen, Jen-Chieh <jcs090218@gmail.com>
-;; URL: https://github.com/jcs-elpa/codemetrics
+;; URL: https://github.com/emacs-vs/codemetrics
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "27.1") (tree-sitter "0.15.1") (s "1.12.0"))
 ;; Keywords: convenience complexity
@@ -44,7 +44,7 @@
   "Plugin shows complexity information."
   :prefix "codemetrics-"
   :group 'comm
-  :link '(url-link :tag "Repository" "https://github.com/jcs-elpa/codemetrics"))
+  :link '(url-link :tag "Repository" "https://github.com/emacs-vs/codemetrics"))
 
 (defcustom codemetrics-complexity 'cognitive
   "Type of the complexity computation."

@@ -5,7 +5,7 @@
 # Code Metrics
 > Plugin shows complexity information
 
-[![CI](https://github.com/jcs-elpa/codemetrics/actions/workflows/test.yml/badge.svg)](https://github.com/jcs-elpa/codemetrics/actions/workflows/test.yml)
+[![CI](https://github.com/emacs-vs/codemetrics/actions/workflows/test.yml/badge.svg)](https://github.com/emacs-vs/codemetrics/actions/workflows/test.yml)
 
 <img src="./etc/demo.gif" />
 
