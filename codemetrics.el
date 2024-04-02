@@ -65,6 +65,7 @@
     (js2-mode        . ,(codemetrics-rules-javascript))
     (js3-mode        . ,(codemetrics-rules-javascript))
     (julia-mode      . ,(codemetrics-rules-julia))
+    (kotlin-mode     . ,(codemetrics-rules-kotlin))
     (lua-mode        . ,(codemetrics-rules-lua))
     (php-mode        . ,(codemetrics-rules-php))
     (python-mode     . ,(codemetrics-rules-python))
@@ -331,19 +332,25 @@ more information."
       '(0 nil))
     '(1 nil)))
 
-(defun codemetrics-rules--logical-operators (node &rest _)
-  "Define rule for logical operators.
+(defun codemetrics-rules--operators (node operators)
+  "Define rule for operators from OPERATORS argument.
 
 For argument NODE, see function `codemetrics-analyze' for more information."
   (codemetrics-with-complexity
     (let* ((parent (tsc-get-parent node))
            (parent-text (tsc-node-text parent))
            (sequence)
-           (count (codemetrics--s-count-matches '("||" "&&") parent-text)))
+           (count (codemetrics--s-count-matches operators parent-text)))
       (when (<= 2 count)
         (setq sequence t))
       (list (if sequence 1 0) nil))
     '(1 nil)))
+
+(defun codemetrics-rules--logical-operators (node &rest _)
+  "Define rule for logical operators.
+
+For argument NODE, see function `codemetrics-analyze' for more information."
+  (codemetrics-rules--operators node '("&&" "||")))
 
 (defun codemetrics-rules--outer-loop (node _depth _nested &optional children)
   "Define rule for outer loop (jump), `break' and `continue' statements.
@@ -434,6 +441,18 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 
 For argument NODE, see function `codemetrics-analyze' for more information."
   (codemetrics-rules--outer-loop node nil nil 2))
+
+(defun codemetrics-rules--kotlin-outer-loop (node &rest _)
+  "Define rule for Java outer loop (jump), `break' and `continue' statements.
+
+For argument NODE, see function `codemetrics-analyze' for more information."
+  (codemetrics-rules--outer-loop node nil nil 1))
+
+(defun codemetrics-rules--kotlin-elvis-operator (node &rest _)
+  "Define rule for the Elvis operator ?:.
+
+For argument NODE, see function `codemetrics-analyze' for more information."
+  (codemetrics-rules--operators node '("?:")))
 
 (defun codemetrics-rules--julia-macro-expression (node &rest _)
   "Define rule for Julia `macro' expression.
