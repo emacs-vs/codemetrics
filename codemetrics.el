@@ -65,6 +65,7 @@
     (js2-mode        . ,(codemetrics-rules-javascript))
     (js3-mode        . ,(codemetrics-rules-javascript))
     (julia-mode      . ,(codemetrics-rules-julia))
+    (kotlin-mode     . ,(codemetrics-rules-kotlin))
     (lua-mode        . ,(codemetrics-rules-lua))
     (php-mode        . ,(codemetrics-rules-php))
     (python-mode     . ,(codemetrics-rules-python))
@@ -434,6 +435,23 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 
 For argument NODE, see function `codemetrics-analyze' for more information."
   (codemetrics-rules--outer-loop node nil nil 2))
+
+(defun codemetrics-rules--kotlin-outer-loop (node &rest _)
+  "Define rule for Java outer loop (jump), `break' and `continue' statements.
+
+For argument NODE, see function `codemetrics-analyze' for more information."
+  (codemetrics-rules--outer-loop node nil nil 1))
+
+(defun codemetrics-rules--kotlin-elvis-operator (node &rest _)
+  "Define rule for the Elvis operator ?:.
+
+For argument NODE, see function `codemetrics-analyze' for more information."
+  (codemetrics-with-complexity
+    (let* ((parent (tsc-get-parent node))
+           (parent-text (tsc-node-text parent))
+           (count (codemetrics--s-count-matches '("?:") parent-text)))
+      (list (if (<= 2 count) 1 0) nil))
+    '(1 nil)))
 
 (defun codemetrics-rules--julia-macro-expression (node &rest _)
   "Define rule for Julia `macro' expression.
