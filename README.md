@@ -105,6 +105,7 @@ These languages are fairly complete:
 - Elisp
 - Go
 - Java / JavaScript / JSX / Julia
+- Kotlin
 - Lua
 - PHP / Python
 - Ruby / Rust
