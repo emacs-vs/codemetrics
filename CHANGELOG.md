@@ -9,6 +9,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 > Released N/A
 
 * Add Elisp support (#6)
+* Rule setup for Kotlin (#8)
 
 ## 0.1.0 
 > Released Mar 10, 2023
