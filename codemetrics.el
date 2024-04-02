@@ -332,19 +332,25 @@ more information."
       '(0 nil))
     '(1 nil)))
 
-(defun codemetrics-rules--logical-operators (node &rest _)
-  "Define rule for logical operators.
+(defun codemetrics-rules--operators (node operators)
+  "Define rule for operators from OPERATORS argument.
 
 For argument NODE, see function `codemetrics-analyze' for more information."
   (codemetrics-with-complexity
     (let* ((parent (tsc-get-parent node))
            (parent-text (tsc-node-text parent))
            (sequence)
-           (count (codemetrics--s-count-matches '("||" "&&") parent-text)))
+           (count (codemetrics--s-count-matches operators parent-text)))
       (when (<= 2 count)
         (setq sequence t))
       (list (if sequence 1 0) nil))
     '(1 nil)))
+
+(defun codemetrics-rules--logical-operators (node &rest _)
+  "Define rule for logical operators.
+
+For argument NODE, see function `codemetrics-analyze' for more information."
+  (codemetrics-rules--operators node '("&&" "||")))
 
 (defun codemetrics-rules--outer-loop (node _depth _nested &optional children)
   "Define rule for outer loop (jump), `break' and `continue' statements.
@@ -446,12 +452,7 @@ For argument NODE, see function `codemetrics-analyze' for more information."
   "Define rule for the Elvis operator ?:.
 
 For argument NODE, see function `codemetrics-analyze' for more information."
-  (codemetrics-with-complexity
-    (let* ((parent (tsc-get-parent node))
-           (parent-text (tsc-node-text parent))
-           (count (codemetrics--s-count-matches '("?:") parent-text)))
-      (list (if (<= 2 count) 1 0) nil))
-    '(1 nil)))
+  (codemetrics-rules--operators node '("?:")))
 
 (defun codemetrics-rules--julia-macro-expression (node &rest _)
   "Define rule for Julia `macro' expression.
