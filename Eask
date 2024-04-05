@@ -21,4 +21,5 @@
 (development
  (depends-on "kotlin-mode")
  (depends-on "go-mode")
- (depends-on "tree-sitter-langs"))
+ (depends-on "tree-sitter-langs")
+ (depends-on "dash"))
