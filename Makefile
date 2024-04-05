@@ -11,7 +11,7 @@ package:
 
 install:
 	@echo "Installing..."
-	$(EASK) install --dev
+	$(EASK) install-deps --dev
 
 compile:
 	@echo "Compiling..."
