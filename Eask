@@ -17,3 +17,9 @@
 (depends-on "s")
 
 (setq network-security-level 'low)  ; see https://github.com/jcs090218/setup-emacs-windows/issues/156#issuecomment-932956432
+
+(development
+ (depends-on "kotlin-mode")
+ (depends-on "go-mode")
+ (depends-on "tree-sitter-langs")
+ (depends-on "dash"))
