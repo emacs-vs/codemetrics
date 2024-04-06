@@ -185,7 +185,8 @@
     ("&&"                 . codemetrics-rules--logical-operators)
     ("||"                 . codemetrics-rules--logical-operators)
     ("?:"                 . codemetrics-rules--kotlin-elvis-operator)
-    (jump_expression      . codemetrics-rules--kotlin-outer-loop) ; break and continue
+    ("break"              . codemetrics-rules--kotlin-outer-loop)
+    ("continue"           . codemetrics-rules--kotlin-outer-loop)
     (call_expression      . codemetrics-rules--recursion)))
 
 (defun codemetrics-rules-lua ()
