@@ -1,6 +1,8 @@
 ;;; kotlin-test.el --- Kotlin language tests for codemetrics.el  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2024 Shen, Jen-Chieh
+;; Copyright (C) 2024 Marie Katrine Ekeberg
+
+;; Author: Marie Katrine Ekeberg <mke@themkat.net>
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
