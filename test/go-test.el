@@ -34,4 +34,26 @@
     (call_expression . 0)
     (for_statement . 1)))
 
+(codemetrics-test recursion-go-code
+  "test/go/Recursion.go"
+  go-mode
+  '(2
+    (function_declaration . 0)
+    (if_statement . 1)
+    (call_expression . 1)))
+
+;; Test of issue:
+;; https://github.com/emacs-vs/codemetrics/issues/7
+(codemetrics-test nested-print-calls
+  "test/go/NestedPrints.go"
+  go-mode
+  '(5
+    (function_declaration . 0)
+    (for_statement . 1)
+    (if_statement . 2)
+    (call_expression . 0)
+    (if_statement . 2)
+    (call_expression . 0)
+    (for_statement . 1)))
+
 ;;; go-test.el ends here
