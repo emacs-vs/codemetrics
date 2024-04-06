@@ -332,6 +332,21 @@ more information."
       '(0 nil))
     '(1 nil)))
 
+;; Kotlin uses its own node name for function identifiers
+(defun codemetrics-rules--kotlin-function-declaration (node depth nested)
+  "Define rule for function declaration in Kotlin.
+
+For arguments NODE, DEPTH, and NESTED, see function `codemetrics-analyze' for
+more information."
+  (when-let ((node (car (codemetrics--tsc-find-children node "simple_identifier"))))
+    (setq codemetrics--recursion-identifier (tsc-node-text node)))
+  (codemetrics-with-complexity
+    ;; These magic numbers are observed by TreeSitter AST.
+    (if (or (<= 5 depth) (<= 3 nested))
+        '(1 nil)
+      '(0 nil))
+    '(1 nil)))
+
 (defun codemetrics-rules--operators (node operators)
   "Define rule for operators from OPERATORS argument.
 
@@ -370,6 +385,19 @@ For argument NODE, see function `codemetrics-analyze' for more information."
       '(0 nil))
     ;; do nothing
     '(0 nil)))
+
+;; Kotlin uses its own name for the identifiers
+(defun codemetrics-rules--kotlin-recursion (node &rest _)
+  "Handle recursion for Kotlin."
+  (codemetrics-with-complexity
+    (if-let* ((identifier (car (codemetrics--tsc-find-children node "simple_identifier")))
+              (text (tsc-node-text identifier))
+              ((equal text codemetrics--recursion-identifier)))
+        '(1 nil)
+      '(0 nil))
+    ;; do nothing
+    '(0 nil)))
+
 
 (defun codemetrics-rules--elixir-call (node depth nested)
   "Define rule for Elixir `call' declaration.
