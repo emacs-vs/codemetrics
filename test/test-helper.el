@@ -3,6 +3,7 @@
 (defmacro codemetrics-test (test-name file major-mode expected-result)
   "Create a codemetrics test named TEST-NAME using FILE in MAJOR-MODE.
 Expecting result EXPECTED-RESULT."
+  (declare (indent 1))
   `(ert-deftest ,test-name ()
      (with-current-buffer (find-file-noselect ,file)
        (,major-mode)
@@ -19,5 +20,3 @@ Expecting result EXPECTED-RESULT."
   (--map (cons (tsc-node-type (car it))
                (nth 2 it))
          (cdr analyze-result)))
-
-(provide 'utils)
