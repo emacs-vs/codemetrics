@@ -33,4 +33,12 @@
     (for_statement . 1)
     (call_expression . 0)))
 
+(codemetrics-test kotlin-recursion
+  "test/kotlin/Recursion.kt"
+  kotlin-mode
+  '(2
+    (function_declaration . 0)
+    (if_expression . 1)
+    (call_expression . 1)))
+
 ;;; kotlin-test.el ends here
