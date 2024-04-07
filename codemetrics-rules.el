@@ -35,6 +35,8 @@
 (declare-function codemetrics-rules--logical-operators "codemetrics.el")
 (declare-function codemetrics-rules--recursion "codemetrics.el")
 
+(declare-function codemetrics-rules--bash-function-declaration "codemetrics.el")
+(declare-function codemetrics-rules--bash-recursion "codemetrics.el")
 (declare-function codemetrics-rules--elixir-call "codemetrics.el")
 (declare-function codemetrics-rules--elisp-special-form "codemetrics.el")
 (declare-function codemetrics-rules--elisp-list "codemetrics.el")
@@ -57,11 +59,11 @@
 
 (defun codemetrics-rules-bash ()
   "Return rules for Bash."
-  `((function_definition . codemetrics-rules--method-declaration)
+  `((function_definition . codemetrics-rules--bash-function-declaration)
     (if_statement        . (1 t))
     (while_statement     . (1 t))
     (for_statement       . (1 t))
-    (command             . codemetrics-rules--recursion)))
+    (command             . codemetrics-rules--bash-recursion)))
 
 (defun codemetrics-rules-c ()
   "Return rules for C."
