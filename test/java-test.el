@@ -1,4 +1,4 @@
-;;; kotlin-test.el --- Kotlin language tests for codemetrics.el  -*- lexical-binding: t; -*-
+;;; java-test.el --- Java language tests for codemetrics.el  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2024 Marie Katrine Ekeberg
 
@@ -22,36 +22,14 @@
 
 ;;; Code:
 (require 'codemetrics)
-(require 'kotlin-mode)
 
-(codemetrics-test simple-kotlin-code
-  "test/kotlin/Simple.kt"
-  kotlin-mode
+(codemetrics-test java-recursion
+  "test/java/Recursion.java"
+  java-mode
   '(2
-    (function_declaration . 0)
-    (if_expression . 1)
-    (for_statement . 1)
-    (call_expression . 0)))
+    (class_declaration . 0)
+    (method_declaration . 0)
+    (if_statement . 1)
+    (method_invocation . 1)))
 
-(codemetrics-test kotlin-recursion
-  "test/kotlin/Recursion.kt"
-  kotlin-mode
-  '(2
-    (function_declaration . 0)
-    (if_expression . 1)
-    (call_expression . 1)))
-
-(codemetrics-test kotlin-break-continue
-  "test/kotlin/BreakContinue.kt"
-  kotlin-mode
-  '(8
-    (function_declaration . 0)
-    (call_expression . 0)
-    (for_statement . 1)
-    (if_expression . 2)
-    ("break" . 1)
-    (for_statement . 1)
-    (if_expression . 2)
-    ("continue" . 1)))
-
-;;; kotlin-test.el ends here
+;;; java-test.el ends here

@@ -317,13 +317,13 @@ For argument DEPTH, see function `codemetrics-analyze' for more information."
       '(0 nil))
     '(1 nil)))
 
-(defun codemetrics-rules--method-declaration (node depth nested)
-  "Define rule for `method' declaration.
+(defun codemetrics-rules--method-declaration-using-node-name (node depth nested node-name)
+  "Define rule for function/method declaration using node name NODE-NAME.
 
 For arguments NODE, DEPTH, and NESTED, see function `codemetrics-analyze' for
 more information."
-  ;; XXX: Record the recursion method name (identifier)
-  (when-let ((node (car (codemetrics--tsc-find-children node "identifier"))))
+  ;; XXX: Record the recursion method name (identifier) identifier by node-name
+  (when-let ((node (car (codemetrics--tsc-find-children node node-name))))
     (setq codemetrics--recursion-identifier (tsc-node-text node)))
   (codemetrics-with-complexity
     ;; These magic numbers are observed by TreeSitter AST.
@@ -331,6 +331,21 @@ more information."
         '(1 nil)
       '(0 nil))
     '(1 nil)))
+
+(defun codemetrics-rules--method-declaration (node depth nested)
+  "Define general rule for `method' declaration for most languages.
+
+For arguments NODE, DEPTH, and NESTED, see function `codemetrics-analyze' for
+more information."
+  (codemetrics-rules--method-declaration-using-node-name node depth nested "identifier"))
+
+;; Kotlin uses its own node name for function identifiers
+(defun codemetrics-rules--kotlin-function-declaration (node depth nested)
+  "Define rule for function declaration in Kotlin.
+
+For arguments NODE, DEPTH, and NESTED, see function `codemetrics-analyze' for
+more information."
+  (codemetrics-rules--method-declaration-using-node-name node depth nested "simple_identifier"))
 
 (defun codemetrics-rules--operators (node operators)
   "Define rule for operators from OPERATORS argument.
@@ -360,16 +375,25 @@ For argument NODE, see function `codemetrics-analyze' for more information."
     (list (if (<= (tsc-count-children node) children) 0 1) nil)
     '(0 nil)))
 
-(defun codemetrics-rules--recursion (node &rest _)
-  "Handle recursion for most languages uses `identifier' as the keyword."
+(defun codemetrics-rules--recursion-using-node-name (node node-name)
+  "General recursion rule using the node name NODE-NAME as the function name."
   (codemetrics-with-complexity
-    (if-let* ((identifier (car (codemetrics--tsc-find-children node "identifier")))
+    (if-let* ((identifier (car (codemetrics--tsc-find-children node node-name)))
               (text (tsc-node-text identifier))
               ((equal text codemetrics--recursion-identifier)))
         '(1 nil)
       '(0 nil))
     ;; do nothing
     '(0 nil)))
+
+(defun codemetrics-rules--recursion (node &rest _)
+  "Handle recursion for most languages uses `identifier' as the keyword."
+  (codemetrics-rules--recursion-using-node-name node "identifier"))
+
+;; Kotlin uses its own name for the identifiers
+(defun codemetrics-rules--kotlin-recursion (node &rest _)
+  "Handle recursion for Kotlin."
+  (codemetrics-rules--recursion-using-node-name node "simple_identifier"))
 
 (defun codemetrics-rules--elixir-call (node depth nested)
   "Define rule for Elixir `call' declaration.

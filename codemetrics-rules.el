@@ -41,6 +41,8 @@
 (declare-function codemetrics-rules--java-outer-loop "codemetrics.el")
 (declare-function codemetrics-rules--kotlin-outer-loop "codemetrics.el")
 (declare-function codemetrics-rules--kotlin-elvis-operator "codemetrics.el")
+(declare-function codemetrics-rules--kotlin-function-declaration "codemetrics.el")
+(declare-function codemetrics-rules--kotlin-recursion "codemetrics.el")
 (declare-function codemetrics-rules--julia-macro-expression "codemetrics.el")
 (declare-function codemetrics-rules--lua-binary-expressions "codemetrics.el")
 (declare-function codemetrics-rules--ruby-binary "codemetrics.el")
@@ -172,7 +174,7 @@
   "Return rules for Kotlin."
   `((class_declaration    . codemetrics-rules--class-declaration)
     (object_declaration   . codemetrics-rules--class-declaration)
-    (function_declaration . codemetrics-rules--method-declaration)
+    (function_declaration . codemetrics-rules--kotlin-function-declaration)
     (lambda_literal       . (0 t))  ; don't score, but increase nested level
     (anonymous_function   . (0 t))  ; should in theory have same effect as lambda
     (if_expression        . (1 t))
@@ -185,8 +187,9 @@
     ("&&"                 . codemetrics-rules--logical-operators)
     ("||"                 . codemetrics-rules--logical-operators)
     ("?:"                 . codemetrics-rules--kotlin-elvis-operator)
-    (jump_expression      . codemetrics-rules--kotlin-outer-loop) ; break and continue
-    (call_expression      . codemetrics-rules--recursion)))
+    ("break"              . codemetrics-rules--kotlin-outer-loop)
+    ("continue"           . codemetrics-rules--kotlin-outer-loop)
+    (call_expression      . codemetrics-rules--kotlin-recursion)))
 
 (defun codemetrics-rules-lua ()
   "Return rules for Lua."
