@@ -43,4 +43,19 @@
     (if_statement . 1)
     (call_expression . 1)))
 
+(codemetrics-test c-control-flow
+  "test/c/ControlFlow.c"
+  c-mode
+  '(4
+    (function_declarator . 0)
+    (switch_statement . 1)
+    (call_expression . 0)
+    (function_declarator . 0)
+    (do_statement . 1)
+    (call_expression . 0)
+    (function_declarator . 0)
+    (call_expression . 0)
+    (if_statement . 1)
+    (goto_statement . 1)))
+
 ;;; c-test.el ends here
