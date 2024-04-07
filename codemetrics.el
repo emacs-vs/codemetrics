@@ -104,6 +104,9 @@ WEIGHT is used to determine the final score."
 (defvar codemetrics--recursion-identifier nil
   "Record recursion identifier for increment.")
 
+(defvar codemetrics--recursion-identifier-depth 0
+  "Record recursion identifier depth to avoid recording recursion outside function.")
+
 ;;
 ;; (@* "Util" )
 ;;
@@ -264,6 +267,12 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
         (tree-sitter-mode 1)
         (codemetrics--tsc-traverse-mapc
          (lambda (node depth)
+           ;; Handle recursion names and depth to avoid global calls
+           ;;  counting as recursion (like calling a function outside
+           ;;  a function in bash).
+           (when (and codemetrics--recursion-identifier
+                      (<= depth codemetrics--recursion-identifier-depth))
+             (setq codemetrics--recursion-identifier nil))
            (when (and nested-level
                       (<= depth nested-level))  ; decrement out
              (setq nested-level nil
@@ -324,7 +333,8 @@ For arguments NODE, DEPTH, and NESTED, see function `codemetrics-analyze' for
 more information."
   ;; XXX: Record the recursion method name (identifier) identifier by node-name
   (when-let ((node (car (codemetrics--tsc-find-children node node-name))))
-    (setq codemetrics--recursion-identifier (tsc-node-text node)))
+    (setq codemetrics--recursion-identifier (tsc-node-text node)
+          codemetrics--recursion-identifier-depth depth))
   (codemetrics-with-complexity
     ;; These magic numbers are observed by TreeSitter AST.
     (if (or (<= 5 depth) (<= 3 nested))
