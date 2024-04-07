@@ -349,14 +349,6 @@ For arguments NODE, DEPTH, and NESTED, see function `codemetrics-analyze' for
 more information."
   (codemetrics-rules--method-declaration-using-node-name node depth nested "identifier"))
 
-;; bash uses the node name word when declaring functions
-(defun codemetrics-rules--bash-function-declaration (node depth nested)
-  "Define rule for function declaration in bash.
-
-For arguments NODE, DEPTH, and NESTED, see function `codemetrics-analyze' for
-more information."
-  (codemetrics-rules--method-declaration-using-node-name node depth nested "word"))
-
 ;; Kotlin uses its own node name for function identifiers
 (defun codemetrics-rules--kotlin-function-declaration (node depth nested)
   "Define rule for function declaration in Kotlin.
@@ -407,11 +399,6 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 (defun codemetrics-rules--recursion (node &rest _)
   "Handle recursion for most languages uses `identifier' as the keyword."
   (codemetrics-rules--recursion-using-node-name node "identifier"))
-
-;; bash uses its own name for its function invocation names: command_name
-(defun codemetrics-rules--bash-recursion (node &rest _)
-  "Handle recursion for bash."
-  (codemetrics-rules--recursion-using-node-name node "command_name"))
 
 ;; Kotlin uses its own name for the identifiers
 (defun codemetrics-rules--kotlin-recursion (node &rest _)

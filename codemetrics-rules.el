@@ -35,8 +35,6 @@
 (declare-function codemetrics-rules--logical-operators "codemetrics.el")
 (declare-function codemetrics-rules--recursion "codemetrics.el")
 
-(declare-function codemetrics-rules--bash-function-declaration "codemetrics.el")
-(declare-function codemetrics-rules--bash-recursion "codemetrics.el")
 (declare-function codemetrics-rules--elixir-call "codemetrics.el")
 (declare-function codemetrics-rules--elisp-special-form "codemetrics.el")
 (declare-function codemetrics-rules--elisp-list "codemetrics.el")
@@ -50,6 +48,7 @@
 (declare-function codemetrics-rules--ruby-binary "codemetrics.el")
 (declare-function codemetrics-rules--rust-outer-loop "codemetrics.el")
 (declare-function codemetrics-rules--scala-call-expression "codemetrics.el")
+(declare-function codemetrics-rules--method-declaration-using-node-name "codemetrics.el")
 
 ;;
 ;; (@* "Rules" )
@@ -59,11 +58,13 @@
 
 (defun codemetrics-rules-bash ()
   "Return rules for Bash."
-  `((function_definition . codemetrics-rules--bash-function-declaration)
+  `((function_definition . (lambda (node depth nested)
+                             (codemetrics-rules--method-declaration-using-node-name node depth nested "word")))
     (if_statement        . (1 t))
     (while_statement     . (1 t))
     (for_statement       . (1 t))
-    (command             . codemetrics-rules--bash-recursion)))
+    (command             . (lambda (node &rest _)
+                             (codemetrics-rules--recursion-using-node-name node "command_name")))))
 
 (defun codemetrics-rules-c ()
   "Return rules for C."
