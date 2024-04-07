@@ -70,7 +70,7 @@
 
 (defun codemetrics-rules-c ()
   "Return rules for C."
-  `((function_definition . codemetrics-rules--method-declaration)
+  `((function_declarator . codemetrics-rules--method-declaration)
     (lambda_expression   . (1 t))
     (preproc_ifdef       . (1 t))  ; macro
     (if_statement        . (1 t))

@@ -28,10 +28,19 @@
   c-mode
   '(4
     (preproc_ifdef . 1)
-    (function_definition . 0)
+    (function_declarator . 0)
+    (function_declarator . 0)
     (for_statement . 1)
     (while_statement . 1)
     (if_statement . 1)
     (call_expression . 0)))
+
+(codemetrics-test c-recursion
+  "test/c/Recursion.c"
+  c-mode
+  '(2
+    (function_declarator . 0)
+    (if_statement . 1)
+    (call_expression . 1)))
 
 ;;; c-test.el ends here
