@@ -28,8 +28,7 @@
   c-mode
   '(4
     (preproc_ifdef . 1)
-    (function_declarator . 0)
-    (function_declarator . 0)
+    (function_definition . 0)
     (for_statement . 1)
     (while_statement . 1)
     (if_statement . 1)
@@ -39,23 +38,23 @@
   "test/c/Recursion.c"
   c-mode
   '(2
-    (function_declarator . 0)
+    (function_definition . 0)
     (if_statement . 1)
     (call_expression . 1)))
 
 (codemetrics-test c-control-flow
   "test/c/ControlFlow.c"
   c-mode
-  '(4
-    (function_declarator . 0)
+  '(5
+    (function_definition . 0)
     (switch_statement . 1)
     (call_expression . 0)
-    (function_declarator . 0)
+    (function_definition . 0)
     (do_statement . 1)
     (call_expression . 0)
-    (function_declarator . 0)
+    (function_definition . 0)
     (call_expression . 0)
     (if_statement . 1)
-    (goto_statement . 1)))
+    (goto_statement . 2)))
 
 ;;; c-test.el ends here
