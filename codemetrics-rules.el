@@ -70,7 +70,10 @@
 
 (defun codemetrics-rules-c ()
   "Return rules for C."
-  `((function_definition . codemetrics-rules--method-declaration)
+  `((function_definition . (lambda (node depth nested)
+                             ;; C has the identifier inside the function_declarator node, which is always inside a function_definition for valid C code
+                             (let ((func-decl-node (car (codemetrics--tsc-find-children node "function_declarator"))))
+                               (codemetrics-rules--method-declaration func-decl-node depth nested))))
     (lambda_expression   . (1 t))
     (preproc_ifdef       . (1 t))  ; macro
     (if_statement        . (1 t))
