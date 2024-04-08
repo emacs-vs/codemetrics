@@ -349,14 +349,6 @@ For arguments NODE, DEPTH, and NESTED, see function `codemetrics-analyze' for
 more information."
   (codemetrics-rules--method-declaration-using-node-name node depth nested "identifier"))
 
-;; Kotlin uses its own node name for function identifiers
-(defun codemetrics-rules--kotlin-function-declaration (node depth nested)
-  "Define rule for function declaration in Kotlin.
-
-For arguments NODE, DEPTH, and NESTED, see function `codemetrics-analyze' for
-more information."
-  (codemetrics-rules--method-declaration-using-node-name node depth nested "simple_identifier"))
-
 (defun codemetrics-rules--operators (node operators)
   "Define rule for operators from OPERATORS argument.
 
@@ -399,11 +391,6 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 (defun codemetrics-rules--recursion (node &rest _)
   "Handle recursion for most languages uses `identifier' as the keyword."
   (codemetrics-rules--recursion-using-node-name node "identifier"))
-
-;; Kotlin uses its own name for the identifiers
-(defun codemetrics-rules--kotlin-recursion (node &rest _)
-  "Handle recursion for Kotlin."
-  (codemetrics-rules--recursion-using-node-name node "simple_identifier"))
 
 (defun codemetrics-rules--elixir-call (node depth nested)
   "Define rule for Elixir `call' declaration.
@@ -481,12 +468,6 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 
 For argument NODE, see function `codemetrics-analyze' for more information."
   (codemetrics-rules--outer-loop node nil nil 1))
-
-(defun codemetrics-rules--kotlin-elvis-operator (node &rest _)
-  "Define rule for the Elvis operator ?:.
-
-For argument NODE, see function `codemetrics-analyze' for more information."
-  (codemetrics-rules--operators node '("?:")))
 
 (defun codemetrics-rules--julia-macro-expression (node &rest _)
   "Define rule for Julia `macro' expression.

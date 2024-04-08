@@ -33,7 +33,10 @@
 (declare-function codemetrics-rules--class-declaration "codemetrics.el")
 (declare-function codemetrics-rules--method-declaration "codemetrics.el")
 (declare-function codemetrics-rules--logical-operators "codemetrics.el")
+(declare-function codemetrics-rules--method-declaration-using-node-name "codemetrics.el")
+(declare-function codemetrics-rules--operators "codemetrics.el")
 (declare-function codemetrics-rules--recursion "codemetrics.el")
+(declare-function codemetrics-rules--recursion-using-node-name "codemetrics.el")
 
 (declare-function codemetrics-rules--elixir-call "codemetrics.el")
 (declare-function codemetrics-rules--elisp-special-form "codemetrics.el")
@@ -48,7 +51,6 @@
 (declare-function codemetrics-rules--ruby-binary "codemetrics.el")
 (declare-function codemetrics-rules--rust-outer-loop "codemetrics.el")
 (declare-function codemetrics-rules--scala-call-expression "codemetrics.el")
-(declare-function codemetrics-rules--method-declaration-using-node-name "codemetrics.el")
 
 ;;
 ;; (@* "Rules" )
@@ -177,7 +179,8 @@
   "Return rules for Kotlin."
   `((class_declaration    . codemetrics-rules--class-declaration)
     (object_declaration   . codemetrics-rules--class-declaration)
-    (function_declaration . codemetrics-rules--kotlin-function-declaration)
+    (function_declaration . (lambda (node depth nested)
+                              (codemetrics-rules--method-declaration-using-node-name node depth nested "simple_identifier")))
     (lambda_literal       . (0 t))  ; don't score, but increase nested level
     (anonymous_function   . (0 t))  ; should in theory have same effect as lambda
     (if_expression        . (1 t))
@@ -189,10 +192,12 @@
     (finally_block        . (1 t))
     ("&&"                 . codemetrics-rules--logical-operators)
     ("||"                 . codemetrics-rules--logical-operators)
-    ("?:"                 . codemetrics-rules--kotlin-elvis-operator)
+    ("?:"                 . (lambda (node &rest _)
+                              (codemetrics-rules--operators node '("?:"))))
     ("break"              . codemetrics-rules--kotlin-outer-loop)
     ("continue"           . codemetrics-rules--kotlin-outer-loop)
-    (call_expression      . codemetrics-rules--kotlin-recursion)))
+    (call_expression      . (lambda (node &rest _)
+                              (codemetrics-rules--recursion-using-node-name node "simple_identifier")))))
 
 (defun codemetrics-rules-lua ()
   "Return rules for Lua."
