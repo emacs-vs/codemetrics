@@ -44,7 +44,7 @@
 
 ;; Test of issue:
 ;; https://github.com/emacs-vs/codemetrics/issues/7
-(codemetrics-test nested-print-calls
+(codemetrics-test go-nested-print-calls
   "test/go/NestedPrints.go"
   go-mode
   '(5
