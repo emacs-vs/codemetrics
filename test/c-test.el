@@ -57,4 +57,20 @@
     (if_statement . 1)
     (goto_statement . 2)))
 
+(codemetrics-test c-logical-operators
+  "test/c/LogicalOperators.c"
+  c-mode
+  '(6
+    (function_definition . 0)
+    (if_statement . 1)
+    ("&&" . 0)
+    (if_statement . 1)
+    ("||" . 0)
+    (if_statement . 1)
+    ("&&" . 0)
+    ("||" . 1)
+    (if_statement . 1)
+    ("||" . 1)
+    ("&&" . 0)))
+
 ;;; c-test.el ends here
