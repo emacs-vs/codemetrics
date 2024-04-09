@@ -47,7 +47,7 @@
 (codemetrics-test go-nested-print-calls
   "test/go/NestedPrints.go"
   go-mode
-  '(5
+  '(6
     (function_declaration . 0)
     (for_statement . 1)
     (if_statement . 2)
