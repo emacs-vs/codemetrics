@@ -6,7 +6,7 @@
 ;; Maintainer: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; URL: https://github.com/emacs-vs/codemetrics
 ;; Version: 0.1.0
-;; Package-Requires: ((emacs "27.1") (tree-sitter "0.15.1") (s "1.12.0"))
+;; Package-Requires: ((emacs "27.1") (tree-sitter "0.15.1") (s "1.12.0") (dash "2.19.1"))
 ;; Keywords: convenience complexity
 
 ;; This file is not part of GNU Emacs.
@@ -35,6 +35,7 @@
 (require 'pcase)
 (require 'rect)
 
+(require 'dash)
 (require 's)
 (require 'tree-sitter)
 
@@ -255,10 +256,14 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
   (codemetrics--ensure-ts
     (let* ((mode (or mode major-mode))
            (rules (codemetrics--rules mode))
-           (nested-level)  ; this is the "starting" nested level
+           ;; Collection of nesting levels
+           (nested-depths '())
            (nested 0)
            (score 0)
            (data)
+           ;; Helper for calculating nested value from our collection of nestings
+           (calculate-nested-value (lambda (nested-depths)
+                                     (max 0 (- (length nested-depths) 1))))
            ;; Global Records
            (codemetrics--recursion-identifier))
       (with-temp-buffer
@@ -273,10 +278,12 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
            (when (and codemetrics--recursion-identifier
                       (<= depth codemetrics--recursion-identifier-depth))
              (setq codemetrics--recursion-identifier nil))
-           (when (and nested-level
-                      (<= depth nested-level))  ; decrement out
-             (setq nested-level nil
-                   nested 0))
+           ;; Decrement out if needed
+           ;;  (if we have moved out of the last nesting)
+           (setq nested-depths (-drop-while (lambda (nested)
+                                              (<= depth nested))
+                                            nested-depths)
+                 nested (funcall calculate-nested-value nested-depths))
            (when-let* ((type (tsc-node-type node))
                        (a-rule (assoc type rules))  ; cons
                        (rule (cdr a-rule)))
@@ -286,13 +293,15 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
                     (weight     (nth 0 rules-data))
                     (inc-nested (nth 1 rules-data)))
                (when inc-nested
-                 (if (null nested-level)
-                     (setq nested-level depth
-                           nested 0)
-                   (cl-incf nested)))
-               (codemetrics--log "depth: %s, nested-level: %s, nested: %s"
-                                 depth nested-level nested)
-               (let ((node-score (+ weight nested)))
+                 (let ((last-depth (or (nth 0 nested-depths)
+                                       depth)))
+                   (when (or (< last-depth depth)
+                           (zerop (length nested-depths)))
+                       (push depth nested-depths)
+                       (setq nested (funcall calculate-nested-value nested-depths)))))
+               (codemetrics--log "depth: %s, nested-depths: %s, nested: %s"
+                                 depth nested-depths nested)
+               (let ((node-score (if inc-nested (+ weight nested) weight)))
                  (codemetrics--log "%s" (cons type node-score))
                  (push (list node depth node-score) data)
                  ;; The first value is plus, second is times.
