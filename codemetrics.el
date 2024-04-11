@@ -296,9 +296,9 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
                  (let ((last-depth (or (nth 0 nested-depths)
                                        depth)))
                    (when (or (< last-depth depth)
-                           (zerop (length nested-depths)))
-                       (push depth nested-depths)
-                       (setq nested (funcall calculate-nested-value nested-depths)))))
+                             (zerop (length nested-depths)))
+                     (push depth nested-depths)
+                     (setq nested (funcall calculate-nested-value nested-depths)))))
                (codemetrics--log "depth: %s, nested-depths: %s, nested: %s"
                                  depth nested-depths nested)
                (let ((node-score (if inc-nested (+ weight nested) weight)))
