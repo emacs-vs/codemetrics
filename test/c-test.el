@@ -73,4 +73,17 @@
     ("||" . 1)
     ("&&" . 0)))
 
+;; Loosely inspired by go nested prints issue
+;; (for verifying issue with multiple nested ifs inside a for-loop)
+(codemetrics-test c-nested-prints
+  "test/c/NestedPrints.c"
+  c-mode
+  '(5
+    (function_definition . 0)
+    (for_statement . 1)
+    (if_statement . 2)
+    (call_expression . 0)
+    (if_statement . 2)
+    (call_expression . 0)))
+
 ;;; c-test.el ends here

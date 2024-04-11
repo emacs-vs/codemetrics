@@ -44,14 +44,14 @@
 (codemetrics-test kotlin-break-continue
   "test/kotlin/BreakContinue.kt"
   kotlin-mode
-  '(8
+  '(6
     (function_declaration . 0)
     (call_expression . 0)
     (for_statement . 1)
     (if_expression . 2)
-    ("break" . 1)
+    ("break" . 0)
     (for_statement . 1)
     (if_expression . 2)
-    ("continue" . 1)))
+    ("continue" . 0)))
 
 ;;; kotlin-test.el ends here
