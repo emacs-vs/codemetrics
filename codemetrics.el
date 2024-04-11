@@ -257,13 +257,13 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
     (let* ((mode (or mode major-mode))
            (rules (codemetrics--rules mode))
            ;; Collection of nesting levels
-           (nested-depths '())
+           (nested-depths)
            (nested 0)
            (score 0)
            (data)
            ;; Helper for calculating nested value from our collection of nestings
            (calculate-nested-value (lambda (nested-depths)
-                                     (max 0 (- (length nested-depths) 1))))
+                                     (max 0 (1- (length nested-depths)))))
            ;; Global Records
            (codemetrics--recursion-identifier))
       (with-temp-buffer
