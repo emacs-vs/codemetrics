@@ -152,7 +152,7 @@
 (defun codemetrics-rules-javascript ()
   "Return rules for JavaScript."
   `((function_declaration . codemetrics-rules--method-declaration)
-    (function             . (0 t))  ; traditional anonymous function
+    (function_expression  . (0 t))  ; traditional anonymous function
     (arrow_function       . (0 t))  ; don't score, but increase nested level
     (if_statement         . (1 t))
     (switch_statement     . (1 t))

@@ -22,4 +22,6 @@
 (development
  (depends-on "kotlin-mode")
  (depends-on "go-mode")
+ (depends-on "rust-mode")
+ (depends-on "typescript-mode")
  (depends-on "tree-sitter-langs"))
