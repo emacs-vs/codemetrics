@@ -55,4 +55,15 @@
     (if_statement . 2)
     (call_expression . 0)))
 
+(codemetrics-test javascript-logical-operators
+  "test/javascript/LogicalOperators.js"
+  js-mode
+  '(2
+    ("&&" . 0)
+    ("||" . 0)
+    ("&&" . 0)
+    ("||" . 1)
+    ("||" . 1)
+    ("&&" . 0)))
+
 ;;; javascript-test.el ends here
