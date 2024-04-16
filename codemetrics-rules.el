@@ -209,7 +209,8 @@
     (while_statement      . (1 t))
     (for_statement        . (1 t))
     (repeat_statement     . (1 t))
-    (binary_expression    . codemetrics-rules--lua-binary-expressions)
+    ;; TODO: this gets wrong... Even simple n * factorial(n - 1) gets high complexity...
+    ;;(binary_expression    . codemetrics-rules--lua-binary-expressions)
     (goto_statement       . (1 nil))
     (function_call        . codemetrics-rules--recursion)))
 
