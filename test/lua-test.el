@@ -64,4 +64,28 @@
     (if_statement . 1)
     (binary_expression . 0)
     (goto_statement . 1)))
+
+(codemetrics-test lua-logical-operators
+  "test/lua/LogicalOperators.lua"
+  lua-mode
+  '(2
+    (binary_expression . 0)
+    (binary_expression . 0)
+    (binary_expression . 0)
+    (binary_expression . 0)
+    (binary_expression . 0)
+    (binary_expression . 0)
+    (binary_expression . 1)
+    (binary_expression . 0)
+    (binary_expression . 0)
+    (binary_expression . 0)
+    (binary_expression . 0)
+    (binary_expression . 1)
+    (binary_expression . 0)
+    (binary_expression . 0)
+    (binary_expression . 0)
+    (binary_expression . 0)))
+
+
+
 ;;; lua-test.el ends here
