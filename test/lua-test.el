@@ -29,10 +29,13 @@
   lua-mode
   '(3
     (function_declaration . 0)
+    (binary_expression . 0)
     (function_call . 0)
+    (binary_expression . 0)
     (function_call . 0)
     (for_statement . 1)
-    (if_statement . 2)))
+    (if_statement . 2)
+    (binary_expression . 0)))
 
 (codemetrics-test lua-recursion
   "test/lua/Recursion.lua"
@@ -40,15 +43,25 @@
   '(2
     (function_declaration . 0)
     (if_statement . 1)
-    (function_call . 1)))
+    (binary_expression . 0)
+    (binary_expression . 0)
+    (function_call . 1)
+    (binary_expression . 0)))
 
 (codemetrics-test lua-nesting
   "test/lua/Nesting.lua"
   lua-mode
   '(7
     (while_statement . 1)
+    (binary_expression . 0)
     (if_statement . 2)
+    (binary_expression . 0)
+    (binary_expression . 0)
+    (binary_expression . 0)
     (repeat_statement . 2)
+    (binary_expression . 0)
+    (binary_expression . 0)
     (if_statement . 1)
+    (binary_expression . 0)
     (goto_statement . 1)))
 ;;; lua-test.el ends here
