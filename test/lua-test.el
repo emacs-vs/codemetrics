@@ -42,4 +42,13 @@
     (if_statement . 1)
     (function_call . 1)))
 
+(codemetrics-test lua-nesting
+  "test/lua/Nesting.lua"
+  lua-mode
+  '(7
+    (while_statement . 1)
+    (if_statement . 2)
+    (repeat_statement . 2)
+    (if_statement . 1)
+    (goto_statement . 1)))
 ;;; lua-test.el ends here
