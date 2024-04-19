@@ -491,15 +491,22 @@ For argument NODE, see function `codemetrics-analyze' for more information."
     '(0 nil)))
 
 (defun codemetrics-rules--lua-binary-expressions (node &rest _)
-  "Define rule for Lua binary expressions.
+  "Define rule for Lua binary expressions, which includes logical operators.
 
 For argument NODE, see function `codemetrics-analyze' for more information."
   (codemetrics-with-complexity
-    (let ((matches (codemetrics--tsc-find-children-traverse node "binary_expression"))
-          (sequence nil))
-      (when (<= 2 (length matches))
-        (setq sequence t))
-      (list (if sequence 1 0) nil))
+    (let* ((node-is-logical-operator (lambda (node)
+                                       (-contains? '("and" "or")
+                                                   ;; binary_expressions contain 3 elements; two expressions and one middle string
+                                                   (tsc-node-text (tsc-get-nth-child node 1)))))
+           (matches (codemetrics--tsc-find-children node "binary_expression"))
+           (has-child-logical-operator (-any (lambda (x) (funcall node-is-logical-operator x))
+                                       matches))
+           (self-is-logical-operator (funcall node-is-logical-operator node)))
+      (list (if (and self-is-logical-operator has-child-logical-operator)
+                1
+              0)
+            nil))
     '(1 nil)))
 
 (defun codemetrics-rules--ruby-binary (node &rest _)
