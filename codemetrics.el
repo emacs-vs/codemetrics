@@ -163,6 +163,13 @@ For arguments STR, START, and END, see function `s-count-matches' for details."
     (tsc-traverse-mapc (lambda (child) (push child nodes)) node)
     (reverse nodes)))
 
+(defun codemetrics--child-node-traverse-p (node child)
+  "Return non-nil if CHILD is a child node from NODE in traverse scope."
+  (let ((nodes (codemetrics--get-children-traverse node)))
+    (cl-some (lambda (it)
+               (tsc-node-eq it child))
+             nodes)))
+
 (defun codemetrics--tsc-find-children (node type)
   "Search through the children of NODE to find all with type equal to TYPE;
 then return that list."
@@ -234,6 +241,7 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
         (new-data))
     (while data
       (let* ((current (pop data))
+             (current-node (nth 0 current))
              (current-depth (nth 1 current))
              (accumulate-score 0)
              (break)
@@ -241,9 +249,11 @@ details.  Optional argument DEPTH is used for recursive depth calculation."
         (while (and (not break)
                     (< index (length data)))
           (let* ((it         (nth index data))
+                 (node       (nth 0 it))
                  (depth      (nth 1 it))
                  (node-score (nth 2 it)))
-            (if (< current-depth depth)
+            (if (and (< current-depth depth)
+                     (codemetrics--child-node-traverse-p current-node node))
                 (cl-incf accumulate-score node-score)
               (setq break t)))
           (cl-incf index))
@@ -381,13 +391,15 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 (defun codemetrics-rules--outer-loop (node _depth _nested &optional children)
   "Define rule for outer loop (jump), `break' and `continue' statements.
 
+Optional argument CHILDREN is the children count.
+
 For argument NODE, see function `codemetrics-analyze' for more information."
   (codemetrics-with-complexity
     (list (if (<= (tsc-count-children node) children) 0 1) nil)
     '(0 nil)))
 
 (defun codemetrics-rules--recursion-using-node-name (node node-name)
-  "General recursion rule using the node name NODE-NAME as the function name."
+  "General recursion rule using the NODE name NODE-NAME as the function name."
   (codemetrics-with-complexity
     (if-let* ((identifier (car (codemetrics--tsc-find-children node node-name)))
               (text (tsc-node-text identifier))
@@ -398,7 +410,7 @@ For argument NODE, see function `codemetrics-analyze' for more information."
     '(0 nil)))
 
 (defun codemetrics-rules--recursion (node &rest _)
-  "Handle recursion for most languages uses `identifier' as the keyword."
+  "Handle recursion for most languages use `identifier' NODE as the keyword."
   (codemetrics-rules--recursion-using-node-name node "identifier"))
 
 (defun codemetrics-rules--elixir-call (node depth nested)
@@ -501,7 +513,7 @@ For argument NODE, see function `codemetrics-analyze' for more information."
                                                    (tsc-node-text (tsc-get-nth-child node 1)))))
            (matches (codemetrics--tsc-find-children node "binary_expression"))
            (has-child-logical-operator (-any (lambda (x) (funcall node-is-logical-operator x))
-                                       matches))
+                                             matches))
            (self-is-logical-operator (funcall node-is-logical-operator node)))
       (list (if (and self-is-logical-operator has-child-logical-operator)
                 1
@@ -639,7 +651,7 @@ For argument NODE, see function `codemetrics-analyze' for more information."
                     (propertize "mildly complex (%s%%)" 'face 'codemetrics-default)))
     (100 . ,(concat (propertize "❖ " 'face 'codemetrics-extreme)
                     (propertize "very complex (%s%%)" 'face 'codemetrics-default))))
-  "Alist of symbol messages, consist of (score . format-message)."
+  "Alist of symbol messages, consist of (score . message)."
   :type 'list
   :group 'codemetrics)
 
@@ -656,7 +668,7 @@ For argument NODE, see function `codemetrics-analyze' for more information."
       str)))
 
 (defun codemetrics--display-nodes (&optional scope)
-  "Return a list of node types depends on the display scope variable
+  "Return a list of node types depends on the display SCOPE variable
 `codemetrics-display'."
   (setq scope (or scope codemetrics-display))
   (cl-case scope
@@ -679,7 +691,7 @@ For argument NODE, see function `codemetrics-analyze' for more information."
       (memq (tsc-node-type node) scope)))
 
 (defun codemetrics--make-ov (pos)
-  "Create an overlay."
+  "Create an overlay at POS."
   (save-excursion
     (goto-char pos)
     (let* ((ov (make-overlay (line-beginning-position)
