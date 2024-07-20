@@ -102,6 +102,7 @@
     (switch_statement      . (1 t))
     (while_statement       . (1 t))
     (for_statement         . (1 t))
+    (foreach_statement     . (1 t))
     (do_statement          . (1 t))
     (catch_clause          . (1 t))
     (finally_clause        . (1 t))
