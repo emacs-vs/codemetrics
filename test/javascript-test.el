@@ -1,6 +1,6 @@
 ;;; javascript-test.el --- JavaScript language tests for codemetrics.el  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2024 Marie Katrine Ekeberg
+;; Copyright (C) 2024-2025 Marie Katrine Ekeberg
 
 ;; Author: Marie Katrine Ekeberg <mke@themkat.net>
 
