@@ -1,3 +1,5 @@
+;; -*- mode: eask; lexical-binding: t -*-
+
 (package "codemetrics"
          "0.1.0"
          "Plugin shows complexity information")
