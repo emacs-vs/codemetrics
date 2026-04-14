@@ -618,6 +618,7 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 
 (defvar-local codemetrics--ovs nil
   "List of overlays.")
+(put 'codemetrics--ovs 'permanent-local t)
 
 (defcustom codemetrics-priority 100
   "Overlays' priority."
@@ -704,7 +705,8 @@ For argument NODE, see function `codemetrics-analyze' for more information."
 
 (defun codemetrics--delete-ovs ()
   "Clean up all overlays."
-  (mapc #'delete-overlay codemetrics--ovs))
+  (mapc #'delete-overlay codemetrics--ovs)
+  (setq codemetrics--ovs nil))
 
 (defun codemetrics--display-start (buffer)
   "Display result in BUFFER."
